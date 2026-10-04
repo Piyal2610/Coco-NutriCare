@@ -1,8 +1,10 @@
-from flask import Blueprint
+from flask import Blueprint, render_template
+from flask_login import login_required
 
 bp = Blueprint("parent", __name__, url_prefix="/parent")
 
 
 @bp.route("/")
+@login_required
 def index():
-    return "Parent section is working!"
+    return render_template("dashboard.html", section="Parent")

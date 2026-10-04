@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ section }} - Coco NutriCare{% endblock %}
+{% block page_title %}{{ section }} Dashboard{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>Welcome, {{ current_user.name }}!</h2>
+        <p>This is the {{ section }} section. More features are coming soon.</p>
+    </div>
+{% endblock %}
