@@ -1,10 +1,14 @@
 from flask import Flask
 from config import Config
+from .extensions import db, migrate
 
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    db.init_app(app)
+    migrate.init_app(app, db, render_as_batch=True)
 
     from .main.routes import bp as main_bp
     from .auth.routes import bp as auth_bp
