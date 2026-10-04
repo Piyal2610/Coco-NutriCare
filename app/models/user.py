@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.extensions import db
+from app.extensions import db, login_manager
 
 ROLES = ("parent", "doctor", "mother", "admin")
 
@@ -31,3 +31,10 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f"<User {self.email} ({self.role})>"
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))        
+
+
