@@ -71,3 +71,12 @@ a { color: var(--accent); }
 .btn-secondary { background: var(--border); }
 .btn-danger { background: #7a1f1f; }
 .delete-form { margin-top: 14px; }
+
+.muted { color: var(--muted); }
+.child-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--text); text-decoration: none; }
+.child-row:hover { border-color: var(--accent); }
+.info-card { margin-bottom: 16px; }
+.info-card h3 { margin: 0 0 12px; }
+.info-row { display: flex; justify-content: space-between; padding: 6px 0; color: var(--muted); }
+.info-row strong { color: var(--text); }
+.btn-block { display: block; text-align: center; margin-top: 8px; }
