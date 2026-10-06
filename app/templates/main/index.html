@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coco NutriCare</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="landing">
+        <header class="topbar">
+            <a href="{{ url_for('main.index') }}" class="brand">🌿 Coco NutriCare</a>
+            <nav class="topnav">
+                <a href="{{ url_for('main.index') }}">Home</a>
+                <a href="#features">Features</a>
+                <a href="#features">How It Works</a>
+                <a href="#features">About</a>
+                <a href="{{ url_for('auth.login') }}" class="btn">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-orange">Get Started</a>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <h1>Smart Nutrition.<br>Healthy Growth.<br>Brighter Care.</h1>
+            <p>AI-powered nutrition and health support for children and mothers.</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-orange">Get Started</a>
+            <a href="#features" class="btn">Learn More</a>
+        </section>
+
+        <section class="roles" id="features">
+            <div class="role-card">
+                <div class="icon">👪</div>
+                <h3>Parent</h3>
+                <p>Manage your children's growth.</p>
+                <a href="{{ url_for('auth.register') }}" class="btn-outline">Get Started</a>
+            </div>
+            <div class="role-card">
+                <div class="icon">🤰</div>
+                <h3>Pregnant Mother</h3>
+                <p>Track pregnancy nutrition &amp; health.</p>
+                <a href="{{ url_for('auth.register') }}" class="btn-outline">Get Started</a>
+            </div>
+            <div class="role-card">
+                <div class="icon">🩺</div>
+                <h3>Doctor</h3>
+                <p>Review patients &amp; consultations.</p>
+                <a href="{{ url_for('auth.login') }}" class="btn-outline">Doctor Login</a>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
