@@ -27,7 +27,7 @@ class Consultation(db.Model):
 
     requester = db.relationship("User", foreign_keys=[requester_id], backref=db.backref("consultations_requested", lazy=True))
     doctor = db.relationship("User", foreign_keys=[doctor_id], backref=db.backref("consultations_received", lazy=True))
-    child = db.relationship("Child", backref=db.backref("consultations", lazy=True))
+    child = db.relationship("Child", backref=db.backref("consultations", lazy=True, cascade="all, delete-orphan"))
     maternal = db.relationship("MaternalProfile", backref=db.backref("consultations", lazy=True))
     messages = db.relationship(
         "Message",

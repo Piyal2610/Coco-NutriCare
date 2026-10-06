@@ -25,7 +25,7 @@ class Reminder(db.Model):
     status = db.Column(db.String(10), nullable=False, default="Pending")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    child = db.relationship("Child", backref=db.backref("reminders", lazy=True))
+    child = db.relationship("Child", backref=db.backref("reminders", lazy=True, cascade="all, delete-orphan"))
     maternal = db.relationship("MaternalProfile", backref=db.backref("reminders", lazy=True))
 
     @property

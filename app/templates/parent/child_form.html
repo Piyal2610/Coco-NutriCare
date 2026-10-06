@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit Child" if child else "Add Child" }} - Coco NutriCare{% endblock %}
+{% block page_title %}{{ "Edit Child" if child else "Add Child" }}{% endblock %}
+
+{% block content %}
+    <div class="card form-card">
+        <form method="POST">
+            <label>Child Name</label>
+            <input type="text" name="name" value="{{ request.form.get('name', child.name if child else '') }}" required>
+
+            <label>Date of Birth</label>
+            <input type="date" name="date_of_birth" value="{{ request.form.get('date_of_birth', child.date_of_birth.isoformat() if child else '') }}" required>
+
+            {% set selected_gender = request.form.get('gender', child.gender if child else '') %}
+            <label>Gender</label>
+            <select name="gender" required>
+                <option value="">Select gender</option>
+                <option value="male" {% if selected_gender == "male" %}selected{% endif %}>Male</option>
+                <option value="female" {% if selected_gender == "female" %}selected{% endif %}>Female</option>
+            </select>
+
+            <label>Dietary Habits</label>
+            <input type="text" name="dietary_habits" placeholder="e.g. Vegetarian-leaning" value="{{ request.form.get('dietary_habits', (child.dietary_habits or '') if child else '') }}">
+
+            <div class="form-actions">
+                <button type="submit" class="btn">{{ "Save Changes" if child else "Add Child" }}</button>
+                <a href="{{ url_for('parent.index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
+        {% if child %}
+            <form method="POST" action="{{ url_for('parent.delete_child', child_id=child.id) }}" class="delete-form" onsubmit="return confirm('Delete this child profile?');">
+                <button type="submit" class="btn btn-danger">Delete Child</button>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

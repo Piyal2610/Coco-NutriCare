@@ -24,7 +24,7 @@ class Recommendation(db.Model):
     doctor_note = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    child = db.relationship("Child", backref=db.backref("recommendations", lazy=True))
+    child = db.relationship("Child", backref=db.backref("recommendations", lazy=True, cascade="all, delete-orphan"))
     maternal = db.relationship("MaternalProfile", backref=db.backref("recommendations", lazy=True))
     reviewer = db.relationship("User", foreign_keys=[reviewed_by])
 
