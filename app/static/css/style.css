@@ -63,3 +63,11 @@ a { color: var(--accent); }
 .role-card p { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
 
 .btn-outline { display: block; border: 1px solid var(--accent); color: var(--accent); padding: 8px; border-radius: 8px; text-decoration: none; }
+
+.form-card { max-width: 520px; }
+.form-card label { display: block; margin-top: 14px; color: var(--muted); }
+.form-card input, .form-card select { width: 100%; padding: 10px; margin-top: 6px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; }
+.form-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-secondary { background: var(--border); }
+.btn-danger { background: #7a1f1f; }
+.delete-form { margin-top: 14px; }
