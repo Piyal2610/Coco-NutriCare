@@ -56,7 +56,7 @@ def add_child():
             db.session.add(child)
             db.session.commit()
             flash(f"{child.name} has been added.", "success")
-            return redirect(url_for("parent.children"))
+            return redirect(url_for("parent.index"))
     return render_template("parent/child_form.html", child=None)
 
 
@@ -75,7 +75,7 @@ def edit_child(child_id):
                 setattr(child, key, value)
             db.session.commit()
             flash(f"{child.name}'s profile has been updated.", "success")
-            return redirect(url_for("parent.child_detail", child_id=child.id))
+            return redirect(url_for("parent.index"))
     return render_template("parent/child_form.html", child=child)
 
 
@@ -88,21 +88,4 @@ def delete_child(child_id):
     db.session.delete(child)
     db.session.commit()
     flash(f"{name} has been removed.", "success")
-    return redirect(url_for("parent.children"))
-
-
-@bp.route("/children")
-@login_required
-def children():
-    parent_only()
-    kids = Child.query.filter_by(parent_id=current_user.id).order_by(Child.name).all()
-    return render_template("parent/children.html", children=kids)
-
-
-@bp.route("/children/<int:child_id>")
-@login_required
-def child_detail(child_id):
-    parent_only()
-    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
-    latest = child.growth_records[-1] if child.growth_records else None
-    return render_template("parent/child_detail.html", child=child, latest=latest)
+    return redirect(url_for("parent.index"))
