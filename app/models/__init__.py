@@ -3,3 +3,7 @@ from .child import Child
 from .growth_record import GrowthRecord
 from .doctor_profile import DoctorProfile
 from .maternal_profile import MaternalProfile
+from .recommendation import Recommendation
+from .reminder import Reminder
+from .consultation import Consultation
+from .message import Message
