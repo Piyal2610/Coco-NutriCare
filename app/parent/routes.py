@@ -2,7 +2,7 @@ from datetime import date, datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Child
+from app.models import Child, GrowthRecord
 from app.models.child import GENDERS
 
 bp = Blueprint("parent", __name__, url_prefix="/parent")
@@ -106,3 +106,47 @@ def child_detail(child_id):
     child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
     latest = child.growth_records[-1] if child.growth_records else None
     return render_template("parent/child_detail.html", child=child, latest=latest)
+
+
+@bp.route("/children/<int:child_id>/growth/add", methods=["GET", "POST"])
+@login_required
+def add_growth_record(child_id):
+    parent_only()
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    if request.method == "POST":
+        date_text = request.form.get("date", "")
+        weight_text = request.form.get("weight_kg", "")
+        height_text = request.form.get("height_cm", "")
+
+        errors = []
+        try:
+            record_date = datetime.strptime(date_text, "%Y-%m-%d").date()
+            if record_date > date.today():
+                errors.append("Measurement date cannot be in the future.")
+            elif record_date < child.date_of_birth:
+                errors.append("Measurement date cannot be before the date of birth.")
+        except ValueError:
+            errors.append("Please enter a valid measurement date.")
+        try:
+            weight = float(weight_text)
+            if not 0.5 <= weight <= 150:
+                errors.append("Weight must be between 0.5 and 150 kg.")
+        except ValueError:
+            errors.append("Please enter a valid weight.")
+        try:
+            height = float(height_text)
+            if not 30 <= height <= 200:
+                errors.append("Height must be between 30 and 200 cm.")
+        except ValueError:
+            errors.append("Please enter a valid height.")
+
+        if errors:
+            for error in errors:
+                flash(error, "error")
+        else:
+            record = GrowthRecord(child=child, date=record_date, weight_kg=weight, height_cm=height)
+            db.session.add(record)
+            db.session.commit()
+            flash("Growth record saved.", "success")
+            return redirect(url_for("parent.child_detail", child_id=child.id))
+    return render_template("parent/growth_form.html", child=child, today=date.today().isoformat())
