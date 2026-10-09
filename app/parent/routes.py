@@ -5,19 +5,18 @@ from app.extensions import db
 from app.models import Child, GrowthRecord
 from app.models.child import GENDERS
 from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
+from app.decorators import role_required
 
 bp = Blueprint("parent", __name__, url_prefix="/parent")
 
 
 @bp.route("/")
-@login_required
+@role_required("parent")
 def index():
     return render_template("dashboard.html", section="Parent")
 
 
-def parent_only():
-    if current_user.role != "parent":
-        abort(403)
+
 
 
 def read_child_form():
@@ -44,9 +43,9 @@ def read_child_form():
 
 
 @bp.route("/children/add", methods=["GET", "POST"])
-@login_required
+@role_required("parent")
 def add_child():
-    parent_only()
+
     if request.method == "POST":
         data, errors = read_child_form()
         if errors:
@@ -62,9 +61,9 @@ def add_child():
 
 
 @bp.route("/children/<int:child_id>/edit", methods=["GET", "POST"])
-@login_required
+@role_required("parent")
 def edit_child(child_id):
-    parent_only()
+
     child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
     if request.method == "POST":
         data, errors = read_child_form()
@@ -82,9 +81,9 @@ def edit_child(child_id):
 
 
 @bp.route("/children/<int:child_id>/delete", methods=["POST"])
-@login_required
+@role_required("parent")
 def delete_child(child_id):
-    parent_only()
+
     child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
     name = child.name
     db.session.delete(child)
@@ -94,26 +93,26 @@ def delete_child(child_id):
 
 
 @bp.route("/children")
-@login_required
+@role_required("parent")
 def children():
-    parent_only()
+
     kids = Child.query.filter_by(parent_id=current_user.id).order_by(Child.name).all()
     return render_template("parent/children.html", children=kids)
 
 
 @bp.route("/children/<int:child_id>")
-@login_required
+@role_required("parent")
 def child_detail(child_id):
-    parent_only()
+
     child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
     latest = child.growth_records[-1] if child.growth_records else None
     return render_template("parent/child_detail.html", child=child, latest=latest)
 
 
 @bp.route("/children/<int:child_id>/growth/add", methods=["GET", "POST"])
-@login_required
+@role_required("parent")
 def add_growth_record(child_id):
-    parent_only()
+
     child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
     if request.method == "POST":
         date_text = request.form.get("date", "")
@@ -159,9 +158,9 @@ def add_growth_record(child_id):
 
 
 @bp.route("/children/<int:child_id>/growth")
-@login_required
+@role_required("parent")
 def growth_tracking(child_id):
-    parent_only()
+
     child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
     records = child.growth_records
     latest = records[-1] if records else None
