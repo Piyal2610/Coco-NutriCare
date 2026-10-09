@@ -25,6 +25,7 @@
             <p class="muted">No growth records yet.</p>
         {% endif %}
         <a href="{{ url_for('parent.add_growth_record', child_id=child.id) }}" class="btn btn-orange btn-block">+ Add Growth Record</a>
+        <a href="{{ url_for('parent.growth_tracking', child_id=child.id) }}" class="btn btn-block">View Growth Chart</a>
     </div>
 
     <div class="card info-card">

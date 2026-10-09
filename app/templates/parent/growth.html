@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Growth Tracking - Coco NutriCare{% endblock %}
+{% block page_title %}<a href="{{ url_for('parent.child_detail', child_id=child.id) }}">{{ child.name }}</a> / Growth Tracking{% endblock %}
+
+{% block content %}
+    {% if alert %}
+        <div class="card alert-card">
+            <h3>Growth Alert</h3>
+            <p>{{ alert }}</p>
+            <span class="badge badge-warning">Needs review</span>
+        </div>
+        <p class="muted disclaimer">This alert does not diagnose a condition. Please consult your pediatrician.</p>
+    {% endif %}
+
+    <div class="card info-card">
+        {% if chart.weights %}
+            <canvas id="growthChart" height="220"></canvas>
+        {% else %}
+            <p class="muted">No growth records yet.</p>
+        {% endif %}
+    </div>
+
+    {% if latest %}
+        <div class="stat-grid">
+            <div class="card"><span class="muted">CURRENT WEIGHT</span><div class="stat">{{ latest.weight_kg }} kg</div></div>
+            <div class="card"><span class="muted">WHO PERCENTILE</span><div class="stat">{{ latest.percentile if latest.percentile is not none else "N/A" }}</div></div>
+            <div class="card"><span class="muted">GROWTH TREND</span><div class="stat">{{ latest.trend|capitalize if latest.trend else "N/A" }}</div></div>
+        </div>
+    {% endif %}
+
+    <a href="{{ url_for('parent.add_growth_record', child_id=child.id) }}" class="btn btn-orange btn-block">+ Add Growth Record</a>
+{% endblock %}
+
+{% block scripts %}
+    {% if chart.weights %}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+        <script>
+            const data = {{ chart|tojson }};
+            new Chart(document.getElementById("growthChart"), {
+                type: "line",
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        { label: {{ child.name|tojson }}, data: data.weights, borderColor: "#f0962e", backgroundColor: "#f0962e", tension: 0.3 },
+                        { label: "WHO 97th", data: data.p97, borderColor: "#8fa6a0", borderDash: [6, 4], pointRadius: 0 },
+                        { label: "WHO 50th", data: data.p50, borderColor: "#19b394", borderDash: [6, 4], pointRadius: 0 },
+                        { label: "WHO 3rd", data: data.p3, borderColor: "#8fa6a0", borderDash: [6, 4], pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    plugins: { legend: { labels: { color: "#e6efec" } } },
+                    scales: {
+                        x: { ticks: { color: "#8fa6a0" }, grid: { color: "#23403a" } },
+                        y: { ticks: { color: "#8fa6a0" }, grid: { color: "#23403a" }, title: { display: true, text: "Weight (kg)", color: "#8fa6a0" } }
+                    }
+                }
+            });
+        </script>
+    {% endif %}
+{% endblock %}

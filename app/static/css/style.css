@@ -80,3 +80,11 @@ a { color: var(--accent); }
 .info-row { display: flex; justify-content: space-between; padding: 6px 0; color: var(--muted); }
 .info-row strong { color: var(--text); }
 .btn-block { display: block; text-align: center; margin-top: 8px; }
+
+.alert-card { border-color: var(--orange); margin-bottom: 8px; }
+.alert-card h3 { margin: 0 0 8px; color: var(--orange); }
+.badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 13px; }
+.badge-warning { background: rgba(240, 150, 46, 0.2); color: var(--orange); }
+.disclaimer { font-size: 13px; margin: 0 0 16px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { font-size: 24px; color: var(--accent); margin-top: 6px; }
