@@ -55,3 +55,24 @@ def update_growth_records(child):
         record.percentile = weight_percentile(child.gender, age_days, record.weight_kg)
         record.trend = growth_trend(previous, record.percentile)
         previous = record.percentile    
+
+
+def weight_at_z(gender, age_days, z):
+    if age_days < 0 or age_days > MAX_DAY:
+        return None
+    L, M, S = load_table(gender)[age_days]
+    if L == 0:
+        return round(M * math.exp(S * z), 2)
+    return round(M * (1 + L * S * z) ** (1 / L), 2)
+
+
+def growth_alert(record):
+    if record is None or record.percentile is None:
+        return None
+    if record.percentile < 3:
+        return "Weight is below the 3rd percentile for this age."
+    if record.percentile > 97:
+        return "Weight is above the 97th percentile for this age."
+    if record.trend == "slow":
+        return "Weight gain has slowed down since the last record."
+    return None       

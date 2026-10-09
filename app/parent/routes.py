@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import Child, GrowthRecord
 from app.models.child import GENDERS
-from app.growth import weight_percentile, growth_trend, update_growth_records
+from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
 
 bp = Blueprint("parent", __name__, url_prefix="/parent")
 
@@ -156,3 +156,21 @@ def add_growth_record(child_id):
             flash("Growth record saved.", "success")
             return redirect(url_for("parent.child_detail", child_id=child.id))
     return render_template("parent/growth_form.html", child=child, today=date.today().isoformat())
+
+
+@bp.route("/children/<int:child_id>/growth")
+@login_required
+def growth_tracking(child_id):
+    parent_only()
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    records = child.growth_records
+    latest = records[-1] if records else None
+    chart = {"labels": [], "weights": [], "p3": [], "p50": [], "p97": []}
+    for r in records:
+        age_days = (r.date - child.date_of_birth).days
+        chart["labels"].append(r.date.strftime("%b %d, %Y"))
+        chart["weights"].append(r.weight_kg)
+        chart["p3"].append(weight_at_z(child.gender, age_days, -1.881))
+        chart["p50"].append(weight_at_z(child.gender, age_days, 0))
+        chart["p97"].append(weight_at_z(child.gender, age_days, 1.881))
+    return render_template("parent/growth.html", child=child, latest=latest, chart=chart, alert=growth_alert(latest))    
