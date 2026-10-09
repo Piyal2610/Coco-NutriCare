@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import Child, GrowthRecord
 from app.models.child import GENDERS
+from app.growth import weight_percentile, growth_trend, update_growth_records
 
 bp = Blueprint("parent", __name__, url_prefix="/parent")
 
@@ -73,6 +74,7 @@ def edit_child(child_id):
         else:
             for key, value in data.items():
                 setattr(child, key, value)
+            update_growth_records(child)
             db.session.commit()
             flash(f"{child.name}'s profile has been updated.", "success")
             return redirect(url_for("parent.child_detail", child_id=child.id))
@@ -144,7 +146,11 @@ def add_growth_record(child_id):
             for error in errors:
                 flash(error, "error")
         else:
-            record = GrowthRecord(child=child, date=record_date, weight_kg=weight, height_cm=height)
+            age_days = (record_date - child.date_of_birth).days
+            percentile = weight_percentile(child.gender, age_days, weight)
+            previous = next((r for r in reversed(child.growth_records) if r.date < record_date), None)
+            trend = growth_trend(previous.percentile if previous else None, percentile)
+            record = GrowthRecord(child=child, date=record_date, weight_kg=weight, height_cm=height, percentile=percentile, trend=trend)            
             db.session.add(record)
             db.session.commit()
             flash("Growth record saved.", "success")

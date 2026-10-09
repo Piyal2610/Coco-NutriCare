@@ -5,6 +5,7 @@ from app.models import (
     User, Child, GrowthRecord, DoctorProfile, MaternalProfile,
     Recommendation, Reminder, Consultation, Message,
 )
+from app.growth import update_growth_records
 
 PASSWORD = "12345678"
 
@@ -50,6 +51,8 @@ def seed():
         GrowthRecord(child=emma, date=today, weight_kg=12.4, height_cm=88),
         GrowthRecord(child=adam, date=today, weight_kg=24.0, height_cm=122),
     ])
+    for kid in (emma, adam):
+        update_growth_records(kid)
 
     maternal = MaternalProfile(user=mother, due_date=today + timedelta(weeks=16),
                                conditions="anemia", dietary_habits="Non-vegetarian")
