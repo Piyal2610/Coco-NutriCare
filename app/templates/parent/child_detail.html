@@ -19,6 +19,8 @@
             <div class="info-row"><span>Height</span><strong>{{ latest.height_cm }} cm</strong></div>
             <div class="info-row"><span>Weight</span><strong>{{ latest.weight_kg }} kg</strong></div>
             <div class="info-row"><span>Last measured</span><strong>{{ latest.date.strftime("%b %d, %Y") }}</strong></div>
+            <div class="info-row"><span>WHO Weight Percentile</span><strong>{% if latest.percentile is not none %}{{ latest.percentile }}{% else %}Available for ages 0-5{% endif %}</strong></div>
+            <div class="info-row"><span>Growth Trend</span><strong>{{ latest.trend|capitalize if latest.trend else "Not enough records" }}</strong></div>
         {% else %}
             <p class="muted">No growth records yet.</p>
         {% endif %}
