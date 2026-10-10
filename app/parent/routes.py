@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app.extensions import db
@@ -232,6 +232,8 @@ def get_parent_reminder(reminder_id):
 @bp.route("/reminders")
 @role_required("parent")
 def reminders():
+    mark_missed_reminders()
+
     items = (
         Reminder.query.join(Child)
         .filter(Child.parent_id == current_user.id)
@@ -288,3 +290,38 @@ def delete_reminder(reminder_id):
     db.session.commit()
     flash("Reminder deleted.", "success")
     return redirect(url_for("parent.reminders"))   
+
+
+def mark_missed_reminders():
+    overdue = (
+        Reminder.query.join(Child)
+        .filter(
+            Child.parent_id == current_user.id,
+            Reminder.status.in_(["Pending", "Snoozed"]),
+            Reminder.scheduled_at < datetime.now(),
+        )
+        .all()
+    )
+    for reminder in overdue:
+        reminder.status = "Missed"
+    if overdue:
+        db.session.commit()
+
+
+@bp.route("/reminders/<int:reminder_id>/status", methods=["POST"])
+@role_required("parent")
+def update_reminder_status(reminder_id):
+    reminder = get_parent_reminder(reminder_id)
+    action = request.form.get("action", "")
+    if action == "complete":
+        reminder.status = "Completed"
+        flash(f"'{reminder.title}' marked as completed.", "success")
+    elif action == "snooze":
+        reminder.scheduled_at = max(reminder.scheduled_at, datetime.now()) + timedelta(days=1)
+        reminder.status = "Snoozed"
+        flash(f"'{reminder.title}' snoozed for 1 day.", "success")
+    else:
+        flash("Unknown action.", "error")
+        return redirect(url_for("parent.reminders"))
+    db.session.commit()
+    return redirect(url_for("parent.reminders"))    
