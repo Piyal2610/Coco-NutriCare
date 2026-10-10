@@ -9,3 +9,8 @@ class Config:
         "DATABASE_URL", "sqlite:///" + os.path.join(BASE_DIR, "coco.db")
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    MAIL_SERVER = "smtp.gmail.com"
+    MAIL_PORT = 587
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    
