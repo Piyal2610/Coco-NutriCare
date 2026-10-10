@@ -88,3 +88,9 @@ a { color: var(--accent); }
 .disclaimer { font-size: 13px; margin: 0 0 16px; }
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .stat { font-size: 24px; color: var(--accent); margin-top: 6px; }
+
+.greeting { margin: 0 0 4px; }
+.subtitle { margin: 0 0 20px; }
+.badge-success { background: rgba(25, 179, 148, 0.2); color: var(--accent); }
+.badge-muted { background: var(--border); color: var(--muted); }
+.child-row .muted { margin-left: 8px; }

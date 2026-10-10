@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Coco NutriCare{% endblock %}
+{% block page_title %}Parent Dashboard{% endblock %}
+
+{% block content %}
+    <h2 class="greeting">{{ greeting }}, {{ current_user.name.split()[0] }}!</h2>
+    <p class="muted subtitle">Here's your children's health overview.</p>
+
+    <div class="stat-grid">
+        <div class="card"><span class="muted">CHILDREN</span><div class="stat">{{ child_rows|length }}</div></div>
+        <div class="card"><span class="muted">GROWTH</span><div class="stat">{{ "Healthy" if needs_review == 0 else needs_review ~ " need review" }}</div></div>
+        <div class="card"><span class="muted">REMINDERS</span><div class="stat">{{ reminder_count }}</div></div>
+        <div class="card"><span class="muted">CONSULTATIONS</span><div class="stat">{{ consultation_count }}</div></div>
+    </div>
+
+    {% for row in child_rows %}
+        <a href="{{ url_for('parent.child_detail', child_id=row.child.id) }}" class="card child-row">
+            <div>
+                <strong>{{ row.child.name }}</strong>
+                <span class="muted">Age {{ row.child.age_display }}{% if row.latest %} · {{ row.latest.weight_kg }}kg{% endif %}</span>
+            </div>
+            {% if not row.latest %}
+                <span class="badge badge-muted">No records</span>
+            {% elif row.alert %}
+                <span class="badge badge-warning">Needs review</span>
+            {% else %}
+                <span class="badge badge-success">Healthy</span>
+            {% endif %}
+        </a>
+    {% else %}
+        <div class="card"><p>You have not added any children yet.</p></div>
+    {% endfor %}
+
+    <a href="{{ url_for('parent.add_child') }}" class="btn btn-orange btn-block">+ Add Child</a>
+{% endblock %}

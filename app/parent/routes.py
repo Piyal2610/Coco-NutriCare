@@ -2,7 +2,7 @@ from datetime import date, datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Child, GrowthRecord
+from app.models import Child, GrowthRecord, Reminder, Consultation
 from app.models.child import GENDERS
 from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
 from app.decorators import role_required
@@ -13,7 +13,28 @@ bp = Blueprint("parent", __name__, url_prefix="/parent")
 @bp.route("/")
 @role_required("parent")
 def index():
-    return render_template("dashboard.html", section="Parent")
+    kids = Child.query.filter_by(parent_id=current_user.id).order_by(Child.name).all()
+    child_rows = []
+    for child in kids:
+        latest = child.growth_records[-1] if child.growth_records else None
+        child_rows.append({"child": child, "latest": latest, "alert": growth_alert(latest)})
+    needs_review = sum(1 for row in child_rows if row["alert"])
+    child_ids = [child.id for child in kids]
+    reminder_count = Reminder.query.filter(Reminder.child_id.in_(child_ids), Reminder.status == "Pending").count()
+    consultation_count = Consultation.query.filter(
+        Consultation.requester_id == current_user.id,
+        Consultation.status.in_(["Pending", "Accepted"]),
+    ).count()
+    hour = datetime.now().hour
+    greeting = "Good morning" if hour < 12 else "Good afternoon" if hour < 17 else "Good evening"
+    return render_template(
+        "parent/dashboard.html",
+        greeting=greeting,
+        child_rows=child_rows,
+        needs_review=needs_review,
+        reminder_count=reminder_count,
+        consultation_count=consultation_count,
+    )
 
 
 
