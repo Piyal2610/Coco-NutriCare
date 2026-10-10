@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Reminders - Coco NutriCare{% endblock %}
+{% block page_title %}Reminders{% endblock %}
+
+{% block content %}
+    {% for reminder in reminders %}
+        <div class="card reminder-row">
+            <div>
+                <strong>{{ reminder.title }}</strong>
+                <div class="muted">{{ reminder.child.name }} · {{ reminder.type }}</div>
+            </div>
+            <div class="reminder-side">
+                <strong>{{ reminder.scheduled_at.strftime("%b %d, %Y %I:%M %p") }}</strong>
+                <span class="badge badge-muted">{{ reminder.status }}</span>
+                <a href="{{ url_for('parent.edit_reminder', reminder_id=reminder.id) }}">Edit</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="card"><p>No reminders yet.</p></div>
+    {% endfor %}
+
+    <a href="{{ url_for('parent.add_reminder') }}" class="btn btn-orange btn-block">+ Add Reminder</a>
+{% endblock %}

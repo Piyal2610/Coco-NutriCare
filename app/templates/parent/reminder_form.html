@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit Reminder" if reminder else "Add Reminder" }} - Coco NutriCare{% endblock %}
+{% block page_title %}{{ "Edit Reminder" if reminder else "Add Reminder" }}{% endblock %}
+
+{% block content %}
+    {% set selected_child = request.form.get('child_id', reminder.child_id|string if reminder else '') %}
+    {% set selected_type = request.form.get('type', reminder.type if reminder else '') %}
+    <div class="card form-card">
+        <form method="POST">
+            <label>Child</label>
+            <select name="child_id" required>
+                <option value="">Select child</option>
+                {% for kid in kids %}
+                    <option value="{{ kid.id }}" {% if selected_child == kid.id|string %}selected{% endif %}>{{ kid.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Type</label>
+            <select name="type" required>
+                <option value="">Select type</option>
+                {% for t in types %}
+                    <option value="{{ t }}" {% if selected_type == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Title</label>
+            <input type="text" name="title" placeholder="e.g. MMR - Emma" value="{{ request.form.get('title', reminder.title if reminder else '') }}" required>
+
+            <label>Date</label>
+            <input type="date" name="date" value="{{ request.form.get('date', reminder.scheduled_at.strftime('%Y-%m-%d') if reminder else '') }}" required>
+
+            <label>Time</label>
+            <input type="time" name="time" value="{{ request.form.get('time', reminder.scheduled_at.strftime('%H:%M') if reminder else '') }}" required>
+
+            <div class="form-actions">
+                <button type="submit" class="btn">{{ "Save Changes" if reminder else "Add Reminder" }}</button>
+                <a href="{{ url_for('parent.reminders') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
+        {% if reminder %}
+            <form method="POST" action="{{ url_for('parent.delete_reminder', reminder_id=reminder.id) }}" class="delete-form" onsubmit="return confirm('Delete this reminder?');">
+                <button type="submit" class="btn btn-danger">Delete Reminder</button>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

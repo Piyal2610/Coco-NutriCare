@@ -94,3 +94,6 @@ a { color: var(--accent); }
 .badge-success { background: rgba(25, 179, 148, 0.2); color: var(--accent); }
 .badge-muted { background: var(--border); color: var(--muted); }
 .child-row .muted { margin-left: 8px; }
+
+.reminder-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.reminder-side { display: flex; align-items: center; gap: 12px; }

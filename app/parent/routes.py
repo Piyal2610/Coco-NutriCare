@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import Child, GrowthRecord, Reminder, Consultation
 from app.models.child import GENDERS
+from app.models.reminder import REMINDER_TYPES
 from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
 from app.decorators import role_required
 
@@ -194,3 +195,96 @@ def growth_tracking(child_id):
         chart["p50"].append(weight_at_z(child.gender, age_days, 0))
         chart["p97"].append(weight_at_z(child.gender, age_days, 1.881))
     return render_template("parent/growth.html", child=child, latest=latest, chart=chart, alert=growth_alert(latest))    
+
+
+def read_reminder_form(kids):
+    child_id = request.form.get("child_id", type=int)
+    reminder_type = request.form.get("type", "")
+    title = request.form.get("title", "").strip()
+    date_text = request.form.get("date", "")
+    time_text = request.form.get("time", "")
+
+    errors = []
+    if child_id not in [kid.id for kid in kids]:
+        errors.append("Please choose a child.")
+    if reminder_type not in REMINDER_TYPES:
+        errors.append("Please choose a reminder type.")
+    if not title:
+        errors.append("Title is required.")
+    try:
+        scheduled_at = datetime.strptime(f"{date_text} {time_text}", "%Y-%m-%d %H:%M")
+    except ValueError:
+        scheduled_at = None
+        errors.append("Please enter a valid date and time.")
+
+    data = {"child_id": child_id, "type": reminder_type, "title": title, "scheduled_at": scheduled_at}
+    return data, errors
+
+
+def get_parent_reminder(reminder_id):
+    return (
+        Reminder.query.join(Child)
+        .filter(Reminder.id == reminder_id, Child.parent_id == current_user.id)
+        .first_or_404()
+    )
+
+
+@bp.route("/reminders")
+@role_required("parent")
+def reminders():
+    items = (
+        Reminder.query.join(Child)
+        .filter(Child.parent_id == current_user.id)
+        .order_by(Reminder.scheduled_at)
+        .all()
+    )
+    return render_template("parent/reminders.html", reminders=items)
+
+
+@bp.route("/reminders/add", methods=["GET", "POST"])
+@role_required("parent")
+def add_reminder():
+    kids = Child.query.filter_by(parent_id=current_user.id).order_by(Child.name).all()
+    if not kids:
+        flash("Please add a child before creating reminders.", "error")
+        return redirect(url_for("parent.add_child"))
+    if request.method == "POST":
+        data, errors = read_reminder_form(kids)
+        if errors:
+            for error in errors:
+                flash(error, "error")
+        else:
+            db.session.add(Reminder(**data))
+            db.session.commit()
+            flash("Reminder added.", "success")
+            return redirect(url_for("parent.reminders"))
+    return render_template("parent/reminder_form.html", reminder=None, kids=kids, types=REMINDER_TYPES)
+
+
+@bp.route("/reminders/<int:reminder_id>/edit", methods=["GET", "POST"])
+@role_required("parent")
+def edit_reminder(reminder_id):
+    reminder = get_parent_reminder(reminder_id)
+    kids = Child.query.filter_by(parent_id=current_user.id).order_by(Child.name).all()
+    if request.method == "POST":
+        data, errors = read_reminder_form(kids)
+        if errors:
+            for error in errors:
+                flash(error, "error")
+        else:
+            for key, value in data.items():
+                setattr(reminder, key, value)
+            db.session.commit()
+            flash("Reminder updated.", "success")
+            return redirect(url_for("parent.reminders"))
+    return render_template("parent/reminder_form.html", reminder=reminder, kids=kids, types=REMINDER_TYPES)
+
+
+@bp.route("/reminders/<int:reminder_id>/delete", methods=["POST"])
+@role_required("parent")
+def delete_reminder(reminder_id):
+    reminder = get_parent_reminder(reminder_id)
+    db.session.delete(reminder)
+    db.session.commit()
+    flash("Reminder deleted.", "success")
+    return redirect(url_for("parent.reminders"))   
