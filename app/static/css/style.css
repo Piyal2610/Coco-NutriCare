@@ -101,3 +101,7 @@ a { color: var(--accent); }
 .badge-danger { background: rgba(220, 60, 60, 0.2); color: #e06666; }
 .btn-small { padding: 4px 10px; font-size: 13px; }
 .inline-form { display: flex; gap: 6px; margin: 0; }
+
+.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { padding: 6px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 14px; }
+.chip-active { background: var(--btn); border-color: var(--btn); color: #fff; }

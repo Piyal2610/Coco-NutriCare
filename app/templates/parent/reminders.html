@@ -5,11 +5,17 @@
 
 {% block content %}
 {% set status_badges = {"Pending": "badge-muted", "Completed": "badge-success", "Snoozed": "badge-warning", "Missed": "badge-danger"} %}
+    <div class="filter-chips">
+        <a href="{{ url_for('parent.reminders') }}" class="chip {{ 'chip-active' if selected_type == 'All' }}">All</a>
+        {% for t in types %}
+            <a href="{{ url_for('parent.reminders', type=t) }}" class="chip {{ 'chip-active' if selected_type == t }}">{{ t }}</a>
+        {% endfor %}
+    </div>
     {% for reminder in reminders %}
         <div class="card reminder-row">
             <div>
                 <strong>{{ reminder.title }}</strong>
-                <div class="muted">{{ reminder.child.name }} · {{ reminder.type }}</div>
+                <div class="muted">{{ reminder.child.name }} · {{ reminder.type }}{% if reminder.status in ["Pending", "Snoozed"] %}{% set days = (reminder.scheduled_at.date() - today).days %} · {% if days == 0 %}Today{% elif days == 1 %}Tomorrow{% else %}Due in {{ days }} days{% endif %}{% endif %}</div>
             </div>
             <div class="reminder-side">
                 <strong>{{ reminder.scheduled_at.strftime("%b %d, %Y %I:%M %p") }}</strong>
@@ -26,7 +32,7 @@
             </div>
         </div>
     {% else %}
-        <div class="card"><p>No reminders yet.</p></div>
+        <div class="card"><p>No reminders{% if selected_type != "All" %} for {{ selected_type }}{% endif %}.</p></div>
     {% endfor %}
 
     <a href="{{ url_for('parent.add_reminder') }}" class="btn btn-orange btn-block">+ Add Reminder</a>

@@ -234,13 +234,20 @@ def get_parent_reminder(reminder_id):
 def reminders():
     mark_missed_reminders()
 
-    items = (
-        Reminder.query.join(Child)
-        .filter(Child.parent_id == current_user.id)
-        .order_by(Reminder.scheduled_at)
-        .all()
+    selected_type = request.args.get("type", "All")
+    query = Reminder.query.join(Child).filter(Child.parent_id == current_user.id)
+    if selected_type in REMINDER_TYPES:
+        query = query.filter(Reminder.type == selected_type)
+    else:
+        selected_type = "All"
+    items = query.order_by(Reminder.scheduled_at).all()
+    return render_template(
+        "parent/reminders.html",
+        reminders=items,
+        types=REMINDER_TYPES,
+        selected_type=selected_type,
+        today=date.today(),
     )
-    return render_template("parent/reminders.html", reminders=items)
 
 
 @bp.route("/reminders/add", methods=["GET", "POST"])
