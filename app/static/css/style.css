@@ -111,3 +111,9 @@ a { color: var(--accent); }
 .allergen-row select, .other-allergy-form select, .other-allergy-form input { padding: 6px 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
 .other-allergy-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .other-allergy-form input { flex: 1; min-width: 160px; }
+
+.status-form { flex-wrap: wrap; margin-bottom: 8px; }
+.status-form .chip { cursor: pointer; }
+.question { margin: 16px 0 8px; font-weight: bold; }
+.alert-urgent { border-color: #e06666; }
+.alert-urgent h3 { color: #e06666; margin: 0 0 8px; }

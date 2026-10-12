@@ -2,6 +2,7 @@ from datetime import date, datetime
 from app.extensions import db
 
 GENDERS = ("male", "female")
+ALLERGY_STATUSES = ("known", "not_sure", "none")
 
 
 class Child(db.Model):
@@ -14,6 +15,7 @@ class Child(db.Model):
     date_of_birth = db.Column(db.Date, nullable=False)
     gender = db.Column(db.String(10), nullable=False)
     dietary_habits = db.Column(db.String(255))
+    allergy_status = db.Column(db.String(10), nullable=False, default="none", server_default="none")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     parent = db.relationship("User", backref=db.backref("children", lazy=True))

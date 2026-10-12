@@ -3,9 +3,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import Child, GrowthRecord, Reminder, Consultation, ChildAllergy
-from app.models.child import GENDERS
+from app.models.child import GENDERS, ALLERGY_STATUSES
 from app.models.reminder import REMINDER_TYPES
-from app.models.allergy import COMMON_ALLERGENS, ALLERGY_CATEGORIES, SEVERITIES
+from app.models.allergy import COMMON_ALLERGENS, ALLERGY_CATEGORIES, SEVERITIES, REACTION_SYMPTOMS
 from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
 from app.decorators import role_required
 
@@ -352,6 +352,8 @@ def child_allergies(child_id):
                 db.session.add(ChildAllergy(child=child, allergen=allergen, category="Food", severity=severity))
             elif allergen in existing:
                 db.session.delete(existing[allergen])
+        if any(request.form.get(f"allergen_{a}") == "on" for a in COMMON_ALLERGENS):
+            child.allergy_status = "known"
         db.session.commit()
         flash("Allergy checklist saved.", "success")
         return redirect(url_for("parent.child_allergies", child_id=child.id))
@@ -383,6 +385,7 @@ def add_other_allergy(child_id):
         flash(f"{allergen} is already in the list.", "error")
     else:
         db.session.add(ChildAllergy(child=child, allergen=allergen, category=category, severity=severity))
+        child.allergy_status = "known"
         db.session.commit()
         flash(f"{allergen} added.", "success")
     return redirect(url_for("parent.child_allergies", child_id=child.id))
@@ -402,3 +405,62 @@ def delete_allergy(allergy_id):
     db.session.commit()
     flash(f"{name} removed.", "success")
     return redirect(url_for("parent.child_allergies", child_id=child_id))
+
+
+@bp.route("/children/<int:child_id>/allergies/status", methods=["POST"])
+@role_required("parent")
+def set_allergy_status(child_id):
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    status = request.form.get("allergy_status", "")
+    if status not in ALLERGY_STATUSES:
+        flash("Please choose an option.", "error")
+        return redirect(url_for("parent.child_allergies", child_id=child.id))
+    if status == "none":
+        for allergy in list(child.allergies):
+            db.session.delete(allergy)
+        flash(f"Saved: {child.name} has no known allergies.", "success")
+    elif status == "known":
+        flash("Saved. Please tick the allergies below.", "success")
+    child.allergy_status = status
+    db.session.commit()
+    if status == "not_sure":
+        return redirect(url_for("parent.allergy_assessment", child_id=child.id))
+    return redirect(url_for("parent.child_allergies", child_id=child.id))
+
+
+@bp.route("/children/<int:child_id>/allergies/assess", methods=["GET", "POST"])
+@role_required("parent")
+def allergy_assessment(child_id):
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    if request.method == "POST":
+        foods = [f for f in request.form.getlist("foods") if f in COMMON_ALLERGENS]
+        symptoms = [s for s in request.form.getlist("symptoms") if s in REACTION_SYMPTOMS]
+        timing = request.form.get("timing", "")
+        if not foods:
+            flash("Please choose at least one food.", "error")
+        elif not symptoms:
+            flash("Please choose at least one reaction.", "error")
+        else:
+            severity = max((REACTION_SYMPTOMS[s][1] for s in symptoms), key=SEVERITIES.index)
+            existing = {a.allergen: a for a in child.allergies}
+            for food in foods:
+                if food in existing:
+                    if SEVERITIES.index(severity) > SEVERITIES.index(existing[food].severity):
+                        existing[food].severity = severity
+                else:
+                    db.session.add(ChildAllergy(child=child, allergen=food, category="Food", severity=severity, suspected=True))
+            db.session.commit()
+            return render_template(
+                "parent/allergy_result.html",
+                child=child,
+                foods=foods,
+                severity=severity,
+                urgent="breathing" in symptoms or "swelling" in symptoms,
+                quick=timing == "within_2h",
+            )
+    return render_template(
+        "parent/allergy_assessment.html",
+        child=child,
+        common=COMMON_ALLERGENS,
+        symptoms=REACTION_SYMPTOMS,
+    )

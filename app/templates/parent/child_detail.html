@@ -31,7 +31,7 @@
         <h3>Allergy Information</h3>
         {% set food = child.allergies|selectattr("category", "equalto", "Food")|map(attribute="allergen")|join(", ") %}
         {% set medicine = child.allergies|selectattr("category", "equalto", "Medicine")|map(attribute="allergen")|join(", ") %}
-        <div class="info-row"><span>Food Allergies</span><strong>{{ food or "None" }}</strong></div>
+        <div class="info-row"><span>Food Allergies</span><strong>{{ food or ("Not sure" if child.allergy_status == "not_sure" else "None") }}</strong></div>
         <div class="info-row"><span>Medicine Allergies</span><strong>{{ medicine or "None" }}</strong></div>
         <a href="{{ url_for('parent.child_allergies', child_id=child.id) }}" class="btn btn-block">Manage Allergies</a>
     </div>
