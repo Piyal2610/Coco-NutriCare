@@ -3,6 +3,12 @@ from app.extensions import db
 COMMON_ALLERGENS = ("Peanut", "Tree nuts", "Milk", "Egg", "Wheat", "Soy", "Fish", "Shellfish", "Sesame")
 ALLERGY_CATEGORIES = ("Food", "Medicine")
 SEVERITIES = ("Mild", "Moderate", "Severe")
+REACTION_SYMPTOMS = {
+    "rash": ("Skin rash or hives", "Mild"),
+    "stomach": ("Vomiting, stomach pain or diarrhea", "Moderate"),
+    "swelling": ("Swelling of lips, face or tongue", "Severe"),
+    "breathing": ("Difficulty breathing or wheezing", "Severe"),
+}
 
 
 class ChildAllergy(db.Model):
@@ -18,6 +24,7 @@ class ChildAllergy(db.Model):
     allergen = db.Column(db.String(80), nullable=False)
     category = db.Column(db.String(10), nullable=False, default="Food")
     severity = db.Column(db.String(10), nullable=False, default="Mild")
+    suspected = db.Column(db.Boolean, nullable=False, default=False, server_default="0")
 
     child = db.relationship(
         "Child",

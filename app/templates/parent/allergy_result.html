@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment Result - {{ child.name }}{% endblock %}
+{% block page_title %}<a href="{{ url_for('parent.child_allergies', child_id=child.id) }}">{{ child.name }}</a> / Assessment Result{% endblock %}
+
+{% block content %}
+    {% if urgent %}
+        <div class="card alert-card alert-urgent">
+            <h3>Important</h3>
+            <p>Swelling or breathing difficulty can be serious. If this happens again, seek emergency medical help right away.</p>
+        </div>
+    {% endif %}
+
+    <div class="card info-card">
+        <h3>Possible allergy</h3>
+        <div class="info-row"><span>Foods</span><strong>{{ foods|join(", ") }}</strong></div>
+        <div class="info-row"><span>Estimated severity</span><strong>{{ severity }}</strong></div>
+        {% if quick %}
+            <p class="muted">Reactions within 2 hours of eating are commonly linked to food allergies.</p>
+        {% endif %}
+        <p>These foods have been saved as <strong>suspected</strong> allergies, so nutrition plans will avoid them until a doctor confirms.</p>
+    </div>
+
+    <p class="muted disclaimer">This result does not diagnose an allergy. Please consult your pediatrician for testing.</p>
+    <a href="{{ url_for('parent.child_allergies', child_id=child.id) }}" class="btn btn-block">Back to Allergies</a>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Allergy Assessment - {{ child.name }}{% endblock %}
+{% block page_title %}<a href="{{ url_for('parent.child_allergies', child_id=child.id) }}">{{ child.name }}</a> / Allergy Assessment{% endblock %}
+
+{% block content %}
+    <div class="card info-card">
+        <form method="POST">
+            <p class="question">1. After eating which foods did {{ child.name }} have a reaction?</p>
+            {% for food in common %}
+                <label class="check-label"><input type="checkbox" name="foods" value="{{ food }}"> {{ food }}</label>
+            {% endfor %}
+
+            <p class="question">2. What happened?</p>
+            {% for key, item in symptoms.items() %}
+                <label class="check-label"><input type="checkbox" name="symptoms" value="{{ key }}"> {{ item[0] }}</label>
+            {% endfor %}
+
+            <p class="question">3. How soon after eating did it start?</p>
+            <label class="check-label"><input type="radio" name="timing" value="within_2h"> Within 2 hours</label>
+            <label class="check-label"><input type="radio" name="timing" value="later"> Later than 2 hours</label>
+            <label class="check-label"><input type="radio" name="timing" value="unsure" checked> I don't remember</label>
+
+            <button type="submit" class="btn btn-orange btn-block">See Result</button>
+        </form>
+    </div>
+    <p class="muted disclaimer">This assessment does not diagnose an allergy. Please consult your pediatrician.</p>
+{% endblock %}

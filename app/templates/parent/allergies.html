@@ -5,6 +5,21 @@
 
 {% block content %}
     {% set severity_badges = {"Mild": "badge-muted", "Moderate": "badge-warning", "Severe": "badge-danger"} %}
+    {% set status_labels = {"known": "Yes, known allergies", "not_sure": "Not sure", "none": "No allergies"} %}
+    <div class="card info-card">
+        <h3>Does {{ child.name }} have any allergies?</h3>
+        <form method="POST" action="{{ url_for('parent.set_allergy_status', child_id=child.id) }}" class="inline-form status-form">
+            {% for value, label in status_labels.items() %}
+                <button type="submit" name="allergy_status" value="{{ value }}" class="chip {{ 'chip-active' if child.allergy_status == value }}" {% if value == 'none' %}onclick="return confirm('This will remove all saved allergies. Continue?');"{% endif %}>{{ label }}</button>
+            {% endfor %}
+        </form>
+        {% if child.allergy_status == "not_sure" %}
+            <p class="muted">Not sure? Answer a few questions about past reactions.</p>
+            <a href="{{ url_for('parent.allergy_assessment', child_id=child.id) }}" class="btn btn-orange">Start Assessment</a>
+        {% endif %}
+    </div>
+
+    {% if child.allergy_status != "none" %}
 
     <div class="card info-card">
         <h3>Common Food Allergens</h3>
@@ -14,7 +29,7 @@
                 <div class="allergen-row">
                     <label class="check-label">
                         <input type="checkbox" name="allergen_{{ allergen }}" {% if current %}checked{% endif %}>
-                        {{ allergen }}
+                        {{ allergen }}{% if current and current.suspected %} <span class="badge badge-warning">Suspected</span>{% endif %}
                     </label>
                     <select name="severity_{{ allergen }}">
                         {% for s in severities %}
@@ -58,4 +73,5 @@
             <button type="submit" class="btn btn-orange">+ Add</button>
         </form>
     </div>
+    {% endif %}
 {% endblock %}
