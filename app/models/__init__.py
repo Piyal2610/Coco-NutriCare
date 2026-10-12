@@ -7,3 +7,4 @@ from .recommendation import Recommendation
 from .reminder import Reminder
 from .consultation import Consultation
 from .message import Message
+from .allergy import ChildAllergy
