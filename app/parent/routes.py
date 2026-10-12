@@ -2,9 +2,10 @@ from datetime import date, datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Child, GrowthRecord, Reminder, Consultation
+from app.models import Child, GrowthRecord, Reminder, Consultation, ChildAllergy
 from app.models.child import GENDERS
 from app.models.reminder import REMINDER_TYPES
+from app.models.allergy import COMMON_ALLERGENS, ALLERGY_CATEGORIES, SEVERITIES
 from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
 from app.decorators import role_required
 
@@ -332,3 +333,72 @@ def update_reminder_status(reminder_id):
         return redirect(url_for("parent.reminders"))
     db.session.commit()
     return redirect(url_for("parent.reminders"))    
+
+
+@bp.route("/children/<int:child_id>/allergies", methods=["GET", "POST"])
+@role_required("parent")
+def child_allergies(child_id):
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    if request.method == "POST":
+        existing = {a.allergen: a for a in child.allergies}
+        for allergen in COMMON_ALLERGENS:
+            checked = request.form.get(f"allergen_{allergen}") == "on"
+            severity = request.form.get(f"severity_{allergen}", "Mild")
+            if severity not in SEVERITIES:
+                severity = "Mild"
+            if checked and allergen in existing:
+                existing[allergen].severity = severity
+            elif checked:
+                db.session.add(ChildAllergy(child=child, allergen=allergen, category="Food", severity=severity))
+            elif allergen in existing:
+                db.session.delete(existing[allergen])
+        db.session.commit()
+        flash("Allergy checklist saved.", "success")
+        return redirect(url_for("parent.child_allergies", child_id=child.id))
+    existing = {a.allergen: a for a in child.allergies}
+    others = [a for a in child.allergies if a.allergen not in COMMON_ALLERGENS]
+    return render_template(
+        "parent/allergies.html",
+        child=child,
+        common=COMMON_ALLERGENS,
+        existing=existing,
+        others=others,
+        categories=ALLERGY_CATEGORIES,
+        severities=SEVERITIES,
+    )
+
+
+@bp.route("/children/<int:child_id>/allergies/add", methods=["POST"])
+@role_required("parent")
+def add_other_allergy(child_id):
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    allergen = request.form.get("allergen", "").strip().capitalize()
+    category = request.form.get("category", "")
+    severity = request.form.get("severity", "")
+    if not allergen:
+        flash("Please enter an allergen name.", "error")
+    elif category not in ALLERGY_CATEGORIES or severity not in SEVERITIES:
+        flash("Please choose a valid type and severity.", "error")
+    elif any(a.allergen.lower() == allergen.lower() for a in child.allergies):
+        flash(f"{allergen} is already in the list.", "error")
+    else:
+        db.session.add(ChildAllergy(child=child, allergen=allergen, category=category, severity=severity))
+        db.session.commit()
+        flash(f"{allergen} added.", "success")
+    return redirect(url_for("parent.child_allergies", child_id=child.id))
+
+
+@bp.route("/allergies/<int:allergy_id>/delete", methods=["POST"])
+@role_required("parent")
+def delete_allergy(allergy_id):
+    allergy = (
+        ChildAllergy.query.join(Child)
+        .filter(ChildAllergy.id == allergy_id, Child.parent_id == current_user.id)
+        .first_or_404()
+    )
+    child_id = allergy.child_id
+    name = allergy.allergen
+    db.session.delete(allergy)
+    db.session.commit()
+    flash(f"{name} removed.", "success")
+    return redirect(url_for("parent.child_allergies", child_id=child_id))
