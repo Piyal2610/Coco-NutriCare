@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from app.extensions import db
 
@@ -27,6 +28,12 @@ class Recommendation(db.Model):
     child = db.relationship("Child", backref=db.backref("recommendations", lazy=True, cascade="all, delete-orphan"))
     maternal = db.relationship("MaternalProfile", backref=db.backref("recommendations", lazy=True))
     reviewer = db.relationship("User", foreign_keys=[reviewed_by])
+    @property
+    def plan(self):
+        try:
+            return json.loads(self.plan_details)
+        except ValueError:
+            return None
 
     def _repr_(self):
         return f"<Recommendation {self.id} ({self.review_status})>"
