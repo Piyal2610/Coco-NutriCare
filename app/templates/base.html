@@ -17,6 +17,7 @@
                     <a href="{{ url_for('parent.reminders') }}">Reminders</a>
                 {% elif current_user.role == "doctor" %}
                     <a href="{{ url_for('doctor.index') }}">Dashboard</a>
+                    <a href="{{ url_for('doctor.reviews') }}">Review Queue</a>
                 {% elif current_user.role == "mother" %}
                     <a href="{{ url_for('maternal.index') }}">Dashboard</a>
                 {% elif current_user.role == "admin" %}

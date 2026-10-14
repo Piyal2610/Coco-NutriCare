@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Review Queue - Coco NutriCare{% endblock %}
+{% block page_title %}Clinical Review Queue{% endblock %}
+
+{% block content %}
+    <div class="filter-chips">
+        {% for s in statuses %}
+            <a href="{{ url_for('doctor.reviews', status=s) }}" class="chip {{ 'chip-active' if status == s }}">{{ s }} ({{ counts[s] }})</a>
+        {% endfor %}
+    </div>
+
+    {% for rec in items %}
+        {% set child = rec.child %}
+        {% set plan = rec.plan %}
+        <div class="card info-card">
+            <h3>{{ child.name }} · Age {{ child.age_display }}</h3>
+            <p class="muted">Parent: {{ child.parent.name }} · Created {{ rec.created_at.strftime("%b %d, %Y %I:%M %p") }}</p>
+
+            <div class="info-row">
+                <span>Allergies</span>
+                <strong>
+                    {% for a in child.allergies %}{{ a.allergen }}{% if a.suspected %} (suspected){% endif %}{% if not loop.last %}, {% endif %}{% else %}None{% endfor %}
+                </strong>
+            </div>
+
+            {% if conflicts.get(rec.id) %}
+                <div class="card alert-card alert-urgent">
+                    <h3>Allergy conflict</h3>
+                    {% for c in conflicts[rec.id] %}
+                        <p>{{ c.meal }}: {{ c.item }} contains {{ c.allergens|join(", ") }}.</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if plan and plan.breastfeeding_only %}
+                <p>Exclusive breastfeeding (under 6 months).</p>
+            {% elif plan %}
+                {% if plan.targets %}
+                    <div class="info-row"><span>Daily target</span><strong>{{ plan.targets.calories }} kcal · {{ plan.targets.protein_g }} g protein · {{ plan.targets.iron_mg }} mg iron · {{ plan.targets.calcium_mg }} mg calcium</strong></div>
+                {% endif %}
+                {% for meal, foods in plan.meals.items() %}
+                    <div class="info-row"><span>{{ meal }}</span><strong>{{ foods|join(" · ") }}</strong></div>
+                {% endfor %}
+            {% else %}
+                <p>{{ rec.plan_details }}</p>
+            {% endif %}
+
+            {% if rec.doctor_note %}
+                <div class="info-row"><span>Doctor note</span><strong>{{ rec.doctor_note }}</strong></div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('doctor.review_plan', rec_id=rec.id) }}" class="review-form">
+                <textarea name="note" placeholder="Note for the parent (required when flagging)">{{ rec.doctor_note or "" }}</textarea>
+                <div class="review-actions">
+                    <button type="submit" name="action" value="approve" class="btn">Approve</button>
+                    <button type="submit" name="action" value="flag" class="btn btn-danger">Flag</button>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="card"><p>No {{ status|lower }} plans.</p></div>
+    {% endfor %}
+{% endblock %}
