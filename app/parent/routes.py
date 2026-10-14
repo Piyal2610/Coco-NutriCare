@@ -81,7 +81,8 @@ def add_child():
             db.session.commit()
             flash(f"{child.name} has been added.", "success")
             return redirect(url_for("parent.children"))
-    return render_template("parent/child_form.html", child=None)
+    plan_rec = Recommendation.query.filter_by(child_id=child.id).order_by(Recommendation.id.desc()).first()
+    return render_template("parent/child_form.html", child=None , plan_rec=plan_rec)
 
 
 @bp.route("/children/<int:child_id>/edit", methods=["GET", "POST"])

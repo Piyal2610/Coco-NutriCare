@@ -56,11 +56,18 @@
         <div class="card info-card">
             <h3>Clinical Validation</h3>
             {% if recommendation.review_status == "Approved" %}
-                <p class="text-accent">Approved by a doctor{% if recommendation.reviewer %} ({{ recommendation.reviewer.name }}){% endif %}.</p>
+                <p class="text-accent">Approved by a doctor.</p>
             {% elif recommendation.review_status == "Flagged" %}
-                <p class="text-danger">Flagged by a doctor. Please do not follow this plan.</p>
+                <p class="text-danger">Flagged by a doctor. Please do not follow this plan. You can generate a new one below.</p>
             {% else %}
                 <p class="text-warning">Waiting for doctor review. Review before feeding.</p>
+            {% endif %}
+            {% if recommendation.reviewer %}
+                <div class="info-row"><span>Reviewed by</span><strong>{{ recommendation.reviewer.name }}{% if recommendation.reviewer.doctor_profile %} · {{ recommendation.reviewer.doctor_profile.specialization }}{% endif %}</strong></div>
+                <div class="info-row"><span>Reviewed on</span><strong>{{ recommendation.reviewed_at.strftime("%b %d, %Y %I:%M %p") }}</strong></div>
+            {% endif %}
+            {% if recommendation.doctor_note %}
+                <div class="info-row"><span>Doctor's note</span><strong>{{ recommendation.doctor_note }}</strong></div>
             {% endif %}
         </div>
     {% endif %}
