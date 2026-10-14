@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Verification Status - Coco NutriCare{% endblock %}
+{% block page_title %}Verification Status{% endblock %}
+
+{% block content %}
+    {% if profile.verification_status == "Rejected" %}
+        <div class="card alert-card alert-urgent">
+            <h3>Verification rejected</h3>
+            <p>{{ profile.rejection_reason or "No reason was given." }}</p>
+            <a href="{{ url_for('doctor.complete_profile') }}" class="btn btn-orange">Update Details</a>
+        </div>
+    {% else %}
+        <div class="card alert-card">
+            <h3>Waiting for verification</h3>
+            <p>An admin is checking your license. You will get full access once you are verified.</p>
+        </div>
+    {% endif %}
+
+    <div class="card info-card">
+        <h3>Submitted Details</h3>
+        <div class="info-row"><span>Name</span><strong>{{ current_user.name }}</strong></div>
+        <div class="info-row"><span>Specialization</span><strong>{{ profile.specialization }}</strong></div>
+        <div class="info-row"><span>License</span><strong>{{ profile.license_no }}</strong></div>
+        <div class="info-row"><span>Experience</span><strong>{{ profile.experience_years }} years</strong></div>
+        <div class="info-row">
+            <span>Status</span>
+            <span class="badge {{ 'badge-danger' if profile.verification_status == 'Rejected' else 'badge-warning' }}">{{ profile.verification_status }}</span>
+        </div>
+    </div>
+{% endblock %}

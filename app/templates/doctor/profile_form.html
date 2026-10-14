@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Profile - Coco NutriCare{% endblock %}
+{% block page_title %}Complete Your Doctor Profile{% endblock %}
+
+{% block content %}
+    {% if profile and profile.verification_status == "Rejected" %}
+        <div class="card alert-card alert-urgent">
+            <h3>Verification rejected</h3>
+            <p>{{ profile.rejection_reason or "No reason was given." }}</p>
+            <p>Please correct your details and submit again.</p>
+        </div>
+    {% endif %}
+
+    <div class="card form-card">
+        <p class="muted">Your license will be checked by an admin before you can review nutrition plans or accept consultations.</p>
+        <form method="POST">
+            {% set selected = request.form.get('specialization', profile.specialization if profile else '') %}
+            <label>Specialization</label>
+            <select name="specialization" required>
+                <option value="">Select specialization</option>
+                {% for s in specializations %}
+                    <option value="{{ s }}" {% if selected == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+
+            <label>BMDC License Number</label>
+            <input type="text" name="license_no" placeholder="e.g. BMDC-10003" value="{{ request.form.get('license_no', profile.license_no if profile else '') }}" required>
+
+            <label>Years of Experience</label>
+            <input type="number" name="experience_years" min="0" max="60" value="{{ request.form.get('experience_years', profile.experience_years if profile else '') }}" required>
+
+            <div class="form-actions">
+                <button type="submit" class="btn">Submit for Verification</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
