@@ -21,6 +21,7 @@
                     <a href="{{ url_for('maternal.index') }}">Dashboard</a>
                 {% elif current_user.role == "admin" %}
                     <a href="{{ url_for('admin.index') }}">Dashboard</a>
+                    <a href="{{ url_for('admin.doctors') }}">Doctor Verification</a>
                 {% endif %}
             {% endif %}
         </aside>

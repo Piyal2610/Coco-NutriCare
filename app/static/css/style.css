@@ -124,3 +124,6 @@ a { color: var(--accent); }
 .text-accent { color: var(--accent); }
 .text-warning { color: var(--orange); }
 .text-danger { color: #e06666; }
+
+.doctor-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.doctor-actions input { padding: 6px 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; min-width: 200px; }

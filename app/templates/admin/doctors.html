@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Verification - Coco NutriCare{% endblock %}
+{% block page_title %}Doctor Verification{% endblock %}
+
+{% block content %}
+    <div class="filter-chips">
+        {% for s in statuses %}
+            <a href="{{ url_for('admin.doctors', status=s) }}" class="chip {{ 'chip-active' if status == s }}">{{ s }} ({{ counts[s] }})</a>
+        {% endfor %}
+    </div>
+
+    {% for profile in profiles %}
+        <div class="card info-card">
+            <h3>{{ profile.user.name }}</h3>
+            <div class="info-row"><span>Email</span><strong>{{ profile.user.email }}</strong></div>
+            <div class="info-row"><span>Specialization</span><strong>{{ profile.specialization }}</strong></div>
+            <div class="info-row"><span>License</span><strong>{{ profile.license_no }}</strong></div>
+            <div class="info-row"><span>Experience</span><strong>{{ profile.experience_years }} years</strong></div>
+            {% if profile.verified_at %}
+                <div class="info-row"><span>Verified on</span><strong>{{ profile.verified_at.strftime("%b %d, %Y") }}</strong></div>
+            {% endif %}
+            {% if profile.rejection_reason %}
+                <div class="info-row"><span>Rejection reason</span><strong class="text-danger">{{ profile.rejection_reason }}</strong></div>
+            {% endif %}
+
+            <div class="doctor-actions">
+                {% if profile.verification_status != "Verified" %}
+                    <form method="POST" action="{{ url_for('admin.verify_doctor', profile_id=profile.id) }}">
+                        <button type="submit" name="action" value="approve" class="btn">Approve</button>
+                    </form>
+                {% endif %}
+                {% if profile.verification_status != "Rejected" %}
+                    <form method="POST" action="{{ url_for('admin.verify_doctor', profile_id=profile.id) }}" class="inline-form">
+                        <input type="text" name="reason" placeholder="Reason for rejection" required>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="card"><p>No {{ status|lower }} doctors.</p></div>
+    {% endfor %}
+{% endblock %}
