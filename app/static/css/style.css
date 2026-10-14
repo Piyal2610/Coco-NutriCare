@@ -120,3 +120,7 @@ a { color: var(--accent); }
 
 .disclaimer-card { border-color: var(--orange); margin-top: 16px; }
 .disclaimer-card p { margin: 6px 0 0; font-size: 13px; }
+
+.text-accent { color: var(--accent); }
+.text-warning { color: var(--orange); }
+.text-danger { color: #e06666; }

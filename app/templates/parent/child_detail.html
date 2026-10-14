@@ -26,6 +26,7 @@
         {% endif %}
         <a href="{{ url_for('parent.add_growth_record', child_id=child.id) }}" class="btn btn-orange btn-block">+ Add Growth Record</a>
         <a href="{{ url_for('parent.growth_tracking', child_id=child.id) }}" class="btn btn-block">View Growth Chart</a>
+        <a href="{{ url_for('parent.nutrition_plan', child_id=child.id) }}" class="btn btn-orange btn-block">Nutrition Plan</a>
     </div>
     <div class="card info-card">
         <h3>Allergy Information</h3>
