@@ -26,6 +26,7 @@
         {% endif %}
         <a href="{{ url_for('parent.add_growth_record', child_id=child.id) }}" class="btn btn-orange btn-block">+ Add Growth Record</a>
         <a href="{{ url_for('parent.growth_tracking', child_id=child.id) }}" class="btn btn-block">View Growth Chart</a>
+        <div class="info-row"><span>Nutrition plan</span>{% if plan_rec %}<span class="badge {{ {'Approved': 'badge-success', 'Flagged': 'badge-danger'}.get(plan_rec.review_status, 'badge-warning') }}">{{ plan_rec.review_status }}</span>{% else %}<strong>Not generated</strong>{% endif %}</div>
         <a href="{{ url_for('parent.nutrition_plan', child_id=child.id) }}" class="btn btn-orange btn-block">Nutrition Plan</a>
     </div>
     <div class="card info-card">

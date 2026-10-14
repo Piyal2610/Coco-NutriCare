@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 from sqlalchemy import func, select
 from flask import Blueprint, render_template, request, redirect, url_for, flash
@@ -119,6 +120,8 @@ def review_plan(rec_id):
     else:
         rec.review_status = "Approved" if action == "approve" else "Flagged"
         rec.doctor_note = note or None
+        rec.reviewed_by = current_user.id
+        rec.reviewed_at = datetime.now()
         db.session.commit()
         flash(f"Plan for {rec.child.name} marked as {rec.review_status}.", "success")
     return redirect(url_for("doctor.reviews"))

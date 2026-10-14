@@ -49,6 +49,9 @@
             {% if rec.doctor_note %}
                 <div class="info-row"><span>Doctor note</span><strong>{{ rec.doctor_note }}</strong></div>
             {% endif %}
+            {% if rec.reviewer %}
+                <div class="info-row"><span>Reviewed by</span><strong>{{ rec.reviewer.name }} · {{ rec.reviewed_at.strftime("%b %d, %Y") }}</strong></div>
+            {% endif %}
 
             <form method="POST" action="{{ url_for('doctor.review_plan', rec_id=rec.id) }}" class="review-form">
                 <textarea name="note" placeholder="Note for the parent (required when flagging)">{{ rec.doctor_note or "" }}</textarea>
