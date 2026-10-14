@@ -117,3 +117,6 @@ a { color: var(--accent); }
 .question { margin: 16px 0 8px; font-weight: bold; }
 .alert-urgent { border-color: #e06666; }
 .alert-urgent h3 { color: #e06666; margin: 0 0 8px; }
+
+.disclaimer-card { border-color: var(--orange); margin-top: 16px; }
+.disclaimer-card p { margin: 6px 0 0; font-size: 13px; }

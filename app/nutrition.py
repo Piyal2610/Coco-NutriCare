@@ -38,6 +38,8 @@ FOODS = [
     ("Snack", "Sesame laddu", ("Sesame",), 48),
 ]
 
+FOOD_ALLERGENS = {name: set(allergens) for _, name, allergens, _ in FOODS}
+
 
 def targets_for(age_months):
     for start, end, targets in AGE_TARGETS:
@@ -82,3 +84,16 @@ def create_recommendation(child, seed=None):
     db.session.add(recommendation)
     db.session.commit()
     return recommendation
+    if cross_check(plan, child):
+        raise ValueError("Generated plan contains an allergen")
+
+
+def cross_check(plan, child):
+    avoid = {allergy.allergen for allergy in child.allergies}
+    conflicts = []
+    for meal, items in (plan or {}).get("meals", {}).items():
+        for item in items:
+            hit = avoid.intersection(FOOD_ALLERGENS.get(item, set()))
+            if hit:
+                conflicts.append({"meal": meal, "item": item, "allergens": sorted(hit)})
+    return conflicts   
