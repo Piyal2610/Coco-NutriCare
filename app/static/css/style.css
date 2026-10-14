@@ -127,3 +127,6 @@ a { color: var(--accent); }
 
 .doctor-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
 .doctor-actions input { padding: 6px 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; min-width: 200px; }
+
+.review-form textarea { width: 100%; min-height: 60px; padding: 8px; margin: 12px 0 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
+.review-actions { display: flex; gap: 8px; }

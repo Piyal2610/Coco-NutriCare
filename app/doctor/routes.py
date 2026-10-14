@@ -1,8 +1,11 @@
 import re
+from sqlalchemy import func, select
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from app.extensions import db
-from app.models import DoctorProfile
+from app.models import DoctorProfile, Recommendation
+from app.models.recommendation import REVIEW_STATUSES
+from app.nutrition import cross_check
 from app.decorators import role_required, verified_doctor_required
 
 bp = Blueprint("doctor", __name__, url_prefix="/doctor")
@@ -66,3 +69,56 @@ def pending():
     if profile.is_verified:
         return redirect(url_for("doctor.index"))
     return render_template("doctor/pending.html", profile=profile)
+
+
+def latest_child_plans():
+    latest_ids = (
+        select(func.max(Recommendation.id))
+        .where(Recommendation.child_id.is_not(None))
+        .group_by(Recommendation.child_id)
+    )
+    return Recommendation.query.filter(Recommendation.id.in_(latest_ids))
+
+
+@bp.route("/reviews")
+@verified_doctor_required
+def reviews():
+    status = request.args.get("status", "Pending")
+    if status not in REVIEW_STATUSES:
+        status = "Pending"
+    items = (
+        latest_child_plans()
+        .filter(Recommendation.review_status == status)
+        .order_by(Recommendation.created_at)
+        .all()
+    )
+    counts = {s: latest_child_plans().filter(Recommendation.review_status == s).count() for s in REVIEW_STATUSES}
+    conflicts = {rec.id: cross_check(rec.plan, rec.child) for rec in items if rec.plan}
+    return render_template(
+        "doctor/reviews.html",
+        items=items,
+        status=status,
+        counts=counts,
+        statuses=REVIEW_STATUSES,
+        conflicts=conflicts,
+    )
+
+
+@bp.route("/reviews/<int:rec_id>", methods=["POST"])
+@verified_doctor_required
+def review_plan(rec_id):
+    rec = db.get_or_404(Recommendation, rec_id)
+    action = request.form.get("action", "")
+    note = request.form.get("note", "").strip()
+    if action not in ("approve", "flag"):
+        flash("Unknown action.", "error")
+    elif action == "flag" and not note:
+        flash("Please add a note explaining why the plan is flagged.", "error")
+    elif action == "approve" and rec.plan and cross_check(rec.plan, rec.child):
+        flash("This plan contains a known allergen and cannot be approved.", "error")
+    else:
+        rec.review_status = "Approved" if action == "approve" else "Flagged"
+        rec.doctor_note = note or None
+        db.session.commit()
+        flash(f"Plan for {rec.child.name} marked as {rec.review_status}.", "success")
+    return redirect(url_for("doctor.reviews"))
