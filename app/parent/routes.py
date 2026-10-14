@@ -2,11 +2,12 @@ from datetime import date, datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Child, GrowthRecord, Reminder, Consultation, ChildAllergy
+from app.models import Child, GrowthRecord, Reminder, Consultation, ChildAllergy, Recommendation
 from app.models.child import GENDERS, ALLERGY_STATUSES
 from app.models.reminder import REMINDER_TYPES
 from app.models.allergy import COMMON_ALLERGENS, ALLERGY_CATEGORIES, SEVERITIES, REACTION_SYMPTOMS
 from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
+from app.nutrition import create_recommendation, cross_check
 from app.decorators import role_required
 
 bp = Blueprint("parent", __name__, url_prefix="/parent")
@@ -464,3 +465,35 @@ def allergy_assessment(child_id):
         common=COMMON_ALLERGENS,
         symptoms=REACTION_SYMPTOMS,
     )
+
+
+@bp.route("/children/<int:child_id>/nutrition")
+@role_required("parent")
+def nutrition_plan(child_id):
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    recommendation = (
+        Recommendation.query.filter_by(child_id=child.id)
+        .order_by(Recommendation.created_at.desc(), Recommendation.id.desc())
+        .first()
+    )
+    plan = recommendation.plan if recommendation else None
+    conflicts = cross_check(plan, child) if plan else []
+    return render_template(
+        "parent/nutrition.html",
+        child=child,
+        recommendation=recommendation,
+        plan=plan,
+        conflicts=conflicts,
+    )
+
+
+@bp.route("/children/<int:child_id>/nutrition/regenerate", methods=["POST"])
+@role_required("parent")
+def regenerate_plan(child_id):
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    try:
+        create_recommendation(child)
+        flash("A new nutrition plan has been generated.", "success")
+    except ValueError:
+        flash("Could not create a safe plan. Please check the allergy list.", "error")
+    return redirect(url_for("parent.nutrition_plan", child_id=child.id))
