@@ -139,3 +139,8 @@ a { color: var(--accent); }
 .bubble .meta { font-size: 12px; opacity: 0.75; margin-bottom: 4px; }
 .bubble-text { white-space: pre-wrap; word-wrap: break-word; }
 .chat-form textarea { width: 100%; padding: 8px; margin-bottom: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table th, .data-table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
+.data-table th { color: var(--muted); font-weight: 600; }
+.readonly-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
