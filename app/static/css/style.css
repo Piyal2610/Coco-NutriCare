@@ -151,3 +151,6 @@ a { color: var(--accent); }
 .check-list { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 12px; }
 .tips li { margin-bottom: 6px; }
 
+html[lang="bn"] body { font-family: "Hind Siliguri", "Nirmala UI", sans-serif; }
+.lang-toggle { font-weight: 600; color: var(--orange); }
+

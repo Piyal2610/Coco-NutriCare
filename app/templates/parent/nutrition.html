@@ -1,73 +1,73 @@
 {% extends "base.html" %}
 
-{% block title %}Nutrition Plan - {{ child.name }}{% endblock %}
-{% block page_title %}<a href="{{ url_for('parent.child_detail', child_id=child.id) }}">{{ child.name }}</a> / Nutrition Plan{% endblock %}
+{% block title %}{{ t("Nutrition Plan") }} - {{ child.name }}{% endblock %}
+{% block page_title %}<a href="{{ url_for('parent.child_detail', child_id=child.id) }}">{{ child.name }}</a> / {{ t("Nutrition Plan") }}{% endblock %}
 
 {% block content %}
-    <h2 class="greeting">Nutrition Plan</h2>
-    <p class="muted subtitle">{{ child.name }} · Age {{ child.age_display }}</p>
+    <h2 class="greeting">{{ t("Nutrition Plan") }}</h2>
+    <p class="muted subtitle">{{ child.name }} · {{ t("Age") }} {{ child.age_display }}</p>
 
     {% if not plan %}
         <div class="card info-card">
-            <p>No nutrition plan yet. Generate one based on {{ child.name }}'s age and allergies.</p>
+            <p>{{ t("No nutrition plan yet. Generate one based on your child's age and allergies.") }}</p>
         </div>
     {% elif plan.breastfeeding_only %}
         <div class="card info-card">
-            <h3>Exclusive breastfeeding</h3>
-            <p>WHO recommends only breast milk for the first 6 months. Solid foods are usually introduced from 6 months.</p>
+            <h3>{{ t("Exclusive breastfeeding") }}</h3>
+            <p>{{ t("WHO recommends only breast milk for the first 6 months. Solid foods are usually introduced from 6 months.") }}</p>
         </div>
     {% else %}
         {% if conflicts %}
             <div class="card alert-card alert-urgent">
-                <h3>Allergy warning</h3>
+                <h3>{{ t("Allergy warning") }}</h3>
                 {% for c in conflicts %}
-                    <p>{{ c.meal }}: {{ c.item }} contains {{ c.allergens|join(", ") }}.</p>
+                    <p>{{ t(c.meal) }}: {{ t("{item} contains {allergens}.").format(item=t(c.item), allergens=c.allergens|map("t")|join(", ")) }}</p>
                 {% endfor %}
-                <p>Do not use this plan. Generate a new one below.</p>
+                <p>{{ t("Do not use this plan. Generate a new one below.") }}</p>
             </div>
         {% endif %}
 
         {% if plan.targets %}
             <div class="card info-card">
-                <h3>Daily Nutrition Target</h3>
-                <div class="info-row"><span>Calories</span><strong>{{ plan.targets.calories }} kcal</strong></div>
-                <div class="info-row"><span>Protein</span><strong>{{ plan.targets.protein_g }} g</strong></div>
-                <div class="info-row"><span>Iron</span><strong>{{ plan.targets.iron_mg }} mg</strong></div>
-                <div class="info-row"><span>Calcium</span><strong>{{ plan.targets.calcium_mg }} mg</strong></div>
+                <h3>{{ t("Daily Nutrition Target") }}</h3>
+                <div class="info-row"><span>{{ t("Calories") }}</span><strong>{{ plan.targets.calories }} kcal</strong></div>
+                <div class="info-row"><span>{{ t("Protein") }}</span><strong>{{ plan.targets.protein_g }} g</strong></div>
+                <div class="info-row"><span>{{ t("Iron") }}</span><strong>{{ plan.targets.iron_mg }} mg</strong></div>
+                <div class="info-row"><span>{{ t("Calcium") }}</span><strong>{{ plan.targets.calcium_mg }} mg</strong></div>
             </div>
         {% endif %}
 
         {% for meal, items in plan.meals.items() %}
             <div class="card info-card">
-                <h3>{{ meal }}</h3>
-                <p>{{ items|join(" · ") }}</p>
+                <h3>{{ t(meal) }}</h3>
+                <p>{{ items|map("t")|join(" · ") }}</p>
             </div>
         {% endfor %}
 
         <div class="card info-card">
-            <h3>Allergy Check</h3>
+            <h3>{{ t("Allergy Check") }}</h3>
             {% if plan.filtered %}
-                <p class="text-accent">Filtered out {{ plan.filtered|join(", ") }} safely.</p>
+                <p class="text-accent">{{ t("Filtered out {items} safely.").format(items=plan.filtered|map("t")|join(", ")) }}</p>
             {% else %}
-                <p class="muted">No allergens needed filtering.</p>
+                <p class="muted">{{ t("No allergens needed filtering.") }}</p>
             {% endif %}
         </div>
 
         <div class="card info-card">
-            <h3>Clinical Validation</h3>
+            <h3>{{ t("Clinical Validation") }}</h3>
             {% if recommendation.review_status == "Approved" %}
-                <p class="text-accent">Approved by a doctor.</p>
+                <p class="text-accent">{{ t("Approved by a doctor.") }}</p>
             {% elif recommendation.review_status == "Flagged" %}
-                <p class="text-danger">Flagged by a doctor. Please do not follow this plan. You can generate a new one below.</p>
+                <p class="text-danger">{{ t("Flagged by a doctor. Please do not follow this plan. You can generate a new one below.") }}</p>
             {% else %}
-                <p class="text-warning">Waiting for doctor review. Review before feeding.</p>
+                <p class="text-warning">{{ t("Waiting for doctor review. Review before feeding.") }}</p>
             {% endif %}
             {% if recommendation.reviewer %}
-                <div class="info-row"><span>Reviewed by</span><strong>{{ recommendation.reviewer.name }}{% if recommendation.reviewer.doctor_profile %} · {{ recommendation.reviewer.doctor_profile.specialization }}{% endif %}</strong></div>
-                <div class="info-row"><span>Reviewed on</span><strong>{{ recommendation.reviewed_at.strftime("%b %d, %Y %I:%M %p") }}</strong></div>
+                <div class="info-row"><span>{{ t("Reviewed by") }}</span><strong>{{ recommendation.reviewer.name }}{% if recommendation.reviewer.doctor_profile %} · {{ recommendation.reviewer.doctor_profile.specialization }}{% endif %}</strong></div>
+                <div class="info-row"><span>{{ t("Reviewed on") }}</span><strong>{{ recommendation.reviewed_at.strftime("%b %d, %Y %I:%M %p") }}</strong></div>
             {% endif %}
             {% if recommendation.doctor_note %}
-                <div class="info-row"><span>Doctor's note</span><strong>{{ recommendation.doctor_note }}</strong></div>
+                <div class="info-row"><span>{{ t("Doctor's note") }}</span><strong>{{ recommendation.doctor_note }}</strong></div>
             {% endif %}
         </div>
     {% endif %}
@@ -75,6 +75,6 @@
     {% include "partials/medical_disclaimer.html" %}
 
     <form method="POST" action="{{ url_for('parent.regenerate_plan', child_id=child.id) }}">
-        <button type="submit" class="btn btn-orange btn-block">{{ "Regenerate Plan" if plan else "Generate Plan" }}</button>
+        <button type="submit" class="btn btn-orange btn-block">{{ t("Regenerate Plan") if plan else t("Generate Plan") }}</button>
     </form>
 {% endblock %}

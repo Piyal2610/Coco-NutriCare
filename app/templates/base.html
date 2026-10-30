@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Coco NutriCare{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="layout">
@@ -12,24 +13,24 @@
             <div class="logo">Coco NutriCare</div>
             {% if current_user.is_authenticated %}
                 {% if current_user.role == "parent" %}
-                    <a href="{{ url_for('parent.index') }}">Dashboard</a>
-                    <a href="{{ url_for('parent.children') }}">My Children</a>
-                    <a href="{{ url_for('parent.reminders') }}">Reminders</a>
-                    <a href="{{ url_for('parent.consultations') }}">Consultations</a>
+                    <a href="{{ url_for('parent.index') }}">{{ t("Dashboard") }}</a>
+                    <a href="{{ url_for('parent.children') }}">{{ t("My Children") }}</a>
+                    <a href="{{ url_for('parent.reminders') }}">{{ t("Reminders") }}</a>
+                    <a href="{{ url_for('parent.consultations') }}">{{ t("Consultations") }}</a>
                 {% elif current_user.role == "doctor" %}
-                    <a href="{{ url_for('doctor.index') }}">Dashboard</a>
-                    <a href="{{ url_for('doctor.reviews') }}">Review Queue</a>
-                    <a href="{{ url_for('doctor.consultations') }}">Consultations</a>
-                    <a href="{{ url_for('doctor.patients') }}">My Patients</a>
+                    <a href="{{ url_for('doctor.index') }}">{{ t("Dashboard") }}</a>
+                    <a href="{{ url_for('doctor.reviews') }}">{{ t("Review Queue") }}</a>
+                    <a href="{{ url_for('doctor.consultations') }}">{{ t("Consultations") }}</a>
+                    <a href="{{ url_for('doctor.patients') }}">{{ t("My Patients") }}</a>
                 {% elif current_user.role == "mother" %}
-                    <a href="{{ url_for('maternal.index') }}">Dashboard</a>
-                    <a href="{{ url_for('maternal.edit_profile') }}">My Profile</a>
-                    <a href="{{ url_for('maternal.nutrition') }}">Nutrition Plan</a>
-                    <a href="{{ url_for('maternal.reminders') }}">Reminders</a>
-                    <a href="{{ url_for('maternal.request_consultation') }}">Request Consultation</a>
+                    <a href="{{ url_for('maternal.index') }}">{{ t("Dashboard") }}</a>
+                    <a href="{{ url_for('maternal.edit_profile') }}">{{ t("My Profile") }}</a>
+                    <a href="{{ url_for('maternal.nutrition') }}">{{ t("Nutrition Plan") }}</a>
+                    <a href="{{ url_for('maternal.reminders') }}">{{ t("Reminders") }}</a>
+                    <a href="{{ url_for('maternal.request_consultation') }}">{{ t("Request Consultation") }}</a>
                 {% elif current_user.role == "admin" %}
-                    <a href="{{ url_for('admin.index') }}">Dashboard</a>
-                    <a href="{{ url_for('admin.doctors') }}">Doctor Verification</a>
+                    <a href="{{ url_for('admin.index') }}">{{ t("Dashboard") }}</a>
+                    <a href="{{ url_for('admin.doctors') }}">{{ t("Doctor Verification") }}</a>
                 {% endif %}
             {% endif %}
         </aside>
@@ -40,7 +41,7 @@
                 {% if current_user.is_authenticated %}
                     <div class="user">
                         {{ current_user.name }} |
-                        <a href="{{ url_for('auth.logout') }}">Logout</a>
+                        <a href="{{ url_for('main.set_language', code='bn' if current_lang() == 'en' else 'en') }}" class="lang-toggle">{{ "বাংলা" if current_lang() == "en" else "English" }}</a> |<a href="{{ url_for('auth.logout') }}">{{ t("Logout") }}</a>
                     </div>
                 {% endif %}
             </header>

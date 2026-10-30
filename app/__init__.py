@@ -22,5 +22,7 @@ def create_app(config_class=Config):
 
     for bp in (main_bp, auth_bp, parent_bp, doctor_bp, maternal_bp, admin_bp):
         app.register_blueprint(bp)
-
+    from app.i18n import t, current_lang
+    app.jinja_env.globals.update(t=t, current_lang=current_lang)
+    app.jinja_env.filters["t"] = t
     return app
