@@ -13,4 +13,4 @@ class Config:
     MAIL_PORT = 587
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    
+    SHOP_URL = os.environ.get("SHOP_URL", "https://cocobabybite.com")

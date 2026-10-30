@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Coco NutriCare{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+    <form method="GET" class="card search-form">
+        <input type="text" name="q" placeholder="Search by name or email" value="{{ search }}">
+        <select name="role">
+            <option value="">All roles</option>
+            {% for r in roles %}
+                <option value="{{ r }}" {% if role == r %}selected{% endif %}>{{ r|capitalize }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Search</button>
+        {% if search or role %}<a href="{{ url_for('admin.users') }}" class="btn btn-secondary">Clear</a>{% endif %}
+    </form>
+
+    <p class="muted">{{ users|length }} user{{ "" if users|length == 1 else "s" }} found</p>
+
+    <div class="card">
+        <table class="data-table">
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Details</th><th>Status</th><th></th></tr>
+            {% for u in users %}
+                <tr>
+                    <td>{{ u.name }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.role|capitalize }}</td>
+                    <td>
+                        {% if u.role == "doctor" %}
+                            {{ u.doctor_profile.verification_status if u.doctor_profile else "No profile" }}
+                        {% elif u.role == "mother" %}
+                            {{ "Week " ~ u.maternal_profile.pregnancy_week if u.maternal_profile else "No profile" }}
+                        {% else %}
+                            &mdash;
+                        {% endif %}
+                    </td>
+                    <td><span class="badge {{ 'badge-success' if u.active else 'badge-danger' }}">{{ "Active" if u.active else "Inactive" }}</span></td>
+                    <td>
+                        {% if u.role != "admin" %}
+                            <form method="POST" action="{{ url_for('admin.toggle_user', user_id=u.id) }}" onsubmit="return confirm('{{ 'Deactivate' if u.active else 'Activate' }} {{ u.name }}?');">
+                                <input type="hidden" name="q" value="{{ search }}">
+                                <input type="hidden" name="role" value="{{ role }}">
+                                <button type="submit" class="btn btn-small {{ 'btn-danger' if u.active else '' }}">{{ "Deactivate" if u.active else "Activate" }}</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6">No users found.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

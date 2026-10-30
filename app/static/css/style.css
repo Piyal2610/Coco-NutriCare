@@ -154,3 +154,7 @@ a { color: var(--accent); }
 html[lang="bn"] body { font-family: "Hind Siliguri", "Nirmala UI", sans-serif; }
 .lang-toggle { font-weight: 600; color: var(--orange); }
 
+.search-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.search-form input, .search-form select { padding: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
+.search-form input { flex: 1; min-width: 200px; }
+

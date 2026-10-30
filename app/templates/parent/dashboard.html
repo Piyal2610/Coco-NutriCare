@@ -33,4 +33,11 @@
     {% endfor %}
 
     <a href="{{ url_for('parent.add_child') }}" class="btn btn-orange btn-block">{{ t("+ Add Child") }}</a>
+    <a href="{{ config.SHOP_URL }}?utm_source=coconutricare&utm_medium=dashboard" target="_blank" rel="noopener noreferrer" class="card child-row">
+        <div>
+            <strong>{{ t("Order Baby Food") }}</strong>
+            <span class="muted">{{ t("Homemade baby food from Coco Baby Bites. Check ingredients against your child's allergies.") }}</span>
+        </div>
+        <span class="muted">&#8599;</span>
+    </a>
 {% endblock %}
