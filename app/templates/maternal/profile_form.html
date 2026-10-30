@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Maternal Profile - Coco NutriCare{% endblock %}
+{% block page_title %}{{ "Edit" if profile else "Create" }} Maternal Profile{% endblock %}
+
+{% block content %}
+    {% if request.method == "POST" %}
+        {% set selected = request.form.getlist('conditions') %}
+    {% else %}
+        {% set selected = profile.condition_keys if profile else [] %}
+    {% endif %}
+    <div class="card form-card">
+        <form method="POST">
+            <label>Expected Due Date</label>
+            <input type="date" name="due_date" value="{{ request.form.get('due_date', profile.due_date.isoformat() if profile else '') }}" required>
+
+            <label>Known Conditions</label>
+            <div class="check-list">
+                {% for key, label in conditions.items() %}
+                    <label class="check-label"><input type="checkbox" name="conditions" value="{{ key }}" {% if key in selected %}checked{% endif %}> {{ label }}</label>
+                {% endfor %}
+            </div>
+
+            <label>Dietary Habits</label>
+            <input type="text" name="dietary_habits" placeholder="e.g. Vegetarian, no beef" value="{{ request.form.get('dietary_habits', profile.dietary_habits or '' if profile else '') }}">
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-orange">Save Profile</button>
+                {% if profile %}<a href="{{ url_for('maternal.index') }}" class="btn btn-secondary">Cancel</a>{% endif %}
+            </div>
+        </form>
+    </div>
+{% endblock %}

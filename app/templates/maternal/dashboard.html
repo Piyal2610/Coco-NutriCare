@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Maternal Dashboard - Coco NutriCare{% endblock %}
+{% block page_title %}Maternal Dashboard{% endblock %}
+
+{% block content %}
+    {% set badges = {"Pending": "badge-warning", "Accepted": "badge-success", "Declined": "badge-danger", "Closed": "badge-muted"} %}
+    <h2 class="greeting">Hello, {{ current_user.name.split()[0] }}!</h2>
+    <p class="muted subtitle">Week {{ profile.pregnancy_week }} · {{ profile.trimester }} trimester</p>
+
+    <div class="card info-card">
+        <h3>Your Pregnancy</h3>
+        <div class="progress"><div class="progress-bar" style="width: {{ [profile.pregnancy_week * 100 // 40, 100]|min }}%"></div></div>
+        <p class="muted">Week {{ profile.pregnancy_week }} of 40</p>
+        <div class="info-row"><span>Due date</span><strong>{{ profile.due_date.strftime("%b %d, %Y") }}</strong></div>
+        <div class="info-row">
+            <span>Time left</span>
+            <strong>{% if profile.days_to_due >= 0 %}{{ profile.days_to_due }} days to go{% else %}Past due date by {{ -profile.days_to_due }} days{% endif %}</strong>
+        </div>
+        <div class="info-row">
+            <span>Conditions</span>
+            <span class="badge-row">
+                {% for label in profile.condition_labels %}<span class="badge badge-warning">{{ label }}</span>{% else %}<strong>None</strong>{% endfor %}
+            </span>
+        </div>
+        <div class="info-row"><span>Dietary habits</span><strong>{{ profile.dietary_habits or "Not set" }}</strong></div>
+        <a href="{{ url_for('maternal.edit_profile') }}" class="btn btn-block">Edit Profile</a>
+    </div>
+
+    <div class="stat-grid">
+        <div class="card"><span class="muted">TRIMESTER</span><div class="stat">{{ profile.trimester }}</div></div>
+        <div class="card"><span class="muted">REMINDERS</span><div class="stat">{{ reminder_count }}</div></div>
+        <div class="card"><span class="muted">CONSULTATIONS</span><div class="stat">{{ consults|selectattr("status", "in", ["Pending", "Accepted"])|list|length }}</div></div>
+    </div>
+
+    <div class="card info-card">
+        <h3>Tips for the {{ profile.trimester }} Trimester</h3>
+        <ul class="tips">
+            {% for tip in tips %}<li>{{ tip }}</li>{% endfor %}
+        </ul>
+    </div>
+
+    <div class="card info-card">
+        <h3>Consultations</h3>
+        {% for c in consults %}
+            <div class="info-row">
+                <span>{{ c.reason }} · {{ c.doctor.name }} · {{ c.created_at.strftime("%b %d, %Y") }}</span>
+                <span class="reminder-side">
+                    <span class="badge {{ badges[c.status] }}">{{ c.status }}</span>
+                    {% if c.status in ["Accepted", "Closed"] %}<a href="{{ url_for('main.consultation_messages', consult_id=c.id) }}">Open Chat</a>{% endif %}
+                </span>
+            </div>
+        {% else %}
+            <p class="muted">No consultations yet.</p>
+        {% endfor %}
+        <a href="{{ url_for('maternal.request_consultation') }}" class="btn btn-orange btn-block">Request Consultation</a>
+    </div>
+
+    {% include "partials/medical_disclaimer.html" %}
+{% endblock %}

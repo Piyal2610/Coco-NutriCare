@@ -1,6 +1,13 @@
 from datetime import date, datetime
 from app.extensions import db
 
+MATERNAL_CONDITIONS = {
+    "anemia": "Anemia",
+    "gestational_diabetes": "Gestational diabetes",
+    "hypertension": "Hypertension / Pre-eclampsia",
+    "thyroid": "Thyroid disorder",
+}
+
 
 class MaternalProfile(db.Model):
     __tablename__ = "maternal_profiles"
@@ -27,6 +34,17 @@ class MaternalProfile(db.Model):
         if week <= 27:
             return "Second"
         return "Third"
+    @property
+    def condition_keys(self):
+        keys = [c.strip().lower() for c in (self.conditions or "").split(",")]
+        return [k for k in keys if k in MATERNAL_CONDITIONS]
 
+    @property
+    def condition_labels(self):
+        return [MATERNAL_CONDITIONS[k] for k in self.condition_keys]
+
+    @property
+    def days_to_due(self):
+        return (self.due_date - date.today()).days
     def __repr__(self):
         return f"<MaternalProfile user={self.user_id} week={self.pregnancy_week}>"
