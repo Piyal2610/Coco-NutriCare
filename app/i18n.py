@@ -129,6 +129,8 @@ BN = {
     "Peanut butter toast": "পিনাট বাটার টোস্ট",
     "Nut mix": "বাদাম মিশ্রণ",
     "Sesame laddu": "তিলের নাড়ু",
+    "Order Baby Food": "শিশুর খাবার অর্ডার করুন",
+    "Homemade baby food from Coco Baby Bites. Check ingredients against your child's allergies.": "Coco Baby Bites থেকে ঘরে তৈরি শিশুখাদ্য। অর্ডারের আগে শিশুর অ্যালার্জির সাথে উপকরণ মিলিয়ে নিন।",
 }
 
 

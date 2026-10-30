@@ -17,6 +17,7 @@
                     <a href="{{ url_for('parent.children') }}">{{ t("My Children") }}</a>
                     <a href="{{ url_for('parent.reminders') }}">{{ t("Reminders") }}</a>
                     <a href="{{ url_for('parent.consultations') }}">{{ t("Consultations") }}</a>
+                    <a href="{{ config.SHOP_URL }}?utm_source=coconutricare&utm_medium=sidebar" target="_blank" rel="noopener noreferrer">{{ t("Order Baby Food") }} &#8599;</a>
                 {% elif current_user.role == "doctor" %}
                     <a href="{{ url_for('doctor.index') }}">{{ t("Dashboard") }}</a>
                     <a href="{{ url_for('doctor.reviews') }}">{{ t("Review Queue") }}</a>
@@ -31,6 +32,7 @@
                 {% elif current_user.role == "admin" %}
                     <a href="{{ url_for('admin.index') }}">{{ t("Dashboard") }}</a>
                     <a href="{{ url_for('admin.doctors') }}">{{ t("Doctor Verification") }}</a>
+                    <a href="{{ url_for('admin.users') }}">{{ t("User Management") }}</a>
                 {% endif %}
             {% endif %}
         </aside>

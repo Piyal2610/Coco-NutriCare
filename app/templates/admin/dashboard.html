@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Coco NutriCare{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+    <h2 class="greeting">Platform Statistics</h2>
+    <p class="muted subtitle">Live counts from the Coco NutriCare database.</p>
+
+    <div class="stat-grid">
+        <div class="card"><span class="muted">TOTAL PARENTS</span><div class="stat">{{ stats.parents }}</div></div>
+        <div class="card"><span class="muted">VERIFIED DOCTORS</span><div class="stat">{{ stats.doctors_verified }}</div></div>
+        <a href="{{ url_for('admin.doctors') }}" class="card"><span class="muted">PENDING DOCTORS</span><div class="stat text-warning">{{ stats.doctors_pending }}</div></a>
+        <div class="card"><span class="muted">PREGNANT MOTHERS</span><div class="stat">{{ stats.mothers }}</div></div>
+        <div class="card"><span class="muted">CHILD PROFILES</span><div class="stat">{{ stats.children }}</div></div>
+        <div class="card"><span class="muted">GROWTH RECORDS</span><div class="stat">{{ stats.growth_records }}</div></div>
+        <div class="card"><span class="muted">PLANS AWAITING REVIEW</span><div class="stat">{{ stats.plans_pending }}</div></div>
+        <div class="card"><span class="muted">OPEN CONSULTATIONS</span><div class="stat">{{ stats.consultations_open }}</div></div>
+        <div class="card"><span class="muted">PENDING REMINDERS</span><div class="stat">{{ stats.reminders_pending }}</div></div>
+        <a href="{{ url_for('admin.users') }}" class="card"><span class="muted">INACTIVE USERS</span><div class="stat">{{ stats.inactive_users }}</div></a>
+    </div>
+
+    <div class="card info-card">
+        <h3>Pending Doctor Registrations</h3>
+        {% for p in pending_doctors %}
+            <div class="info-row">
+                <span>{{ p.user.name }} · {{ p.specialization }} · {{ p.license_no }} · {{ p.experience_years }} yrs</span>
+                <span class="badge badge-warning">Pending</span>
+            </div>
+        {% else %}
+            <p class="muted">No doctors waiting for verification.</p>
+        {% endfor %}
+        <a href="{{ url_for('admin.doctors') }}" class="btn btn-block">Review Doctors</a>
+    </div>
+
+    <a href="{{ url_for('admin.users') }}" class="btn btn-orange btn-block">Manage Users</a>
+{% endblock %}
