@@ -536,6 +536,7 @@ def request_consultation(child_id):
                 doctor_id=doctor.id,
                 child_id=child.id,
                 reason=reason,
+                created_at=datetime.now(),
                 description=description or None,
             ))
             db.session.commit()
