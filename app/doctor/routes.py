@@ -4,7 +4,8 @@ from sqlalchemy import func, select
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from app.extensions import db
-from app.models import DoctorProfile, Recommendation
+from app.models import DoctorProfile, Recommendation, Consultation
+from app.models.consultation import CONSULTATION_STATUSES
 from app.models.recommendation import REVIEW_STATUSES
 from app.nutrition import cross_check
 from app.decorators import role_required, verified_doctor_required
@@ -125,3 +126,36 @@ def review_plan(rec_id):
         db.session.commit()
         flash(f"Plan for {rec.child.name} marked as {rec.review_status}.", "success")
     return redirect(url_for("doctor.reviews"))
+@bp.route("/consultations")
+@verified_doctor_required
+def consultations():
+    status = request.args.get("status", "Pending")
+    if status not in CONSULTATION_STATUSES:
+        status = "Pending"
+    base = Consultation.query.filter_by(doctor_id=current_user.id)
+    items = base.filter_by(status=status).order_by(Consultation.created_at).all()
+    counts = {s: base.filter_by(status=s).count() for s in CONSULTATION_STATUSES}
+    return render_template(
+        "doctor/consultations.html",
+        items=items,
+        status=status,
+        counts=counts,
+        statuses=CONSULTATION_STATUSES,
+    )
+
+
+@bp.route("/consultations/<int:consult_id>/respond", methods=["POST"])
+@verified_doctor_required
+def respond_consultation(consult_id):
+    consult = Consultation.query.filter_by(id=consult_id, doctor_id=current_user.id).first_or_404()
+    action = request.form.get("action", "")
+    if consult.status != "Pending":
+        flash("This request has already been answered.", "error")
+    elif action in ("accept", "decline"):
+        consult.status = "Accepted" if action == "accept" else "Declined"
+        consult.responded_at = datetime.now()
+        db.session.commit()
+        flash(f"Consultation from {consult.requester.name} {consult.status.lower()}.", "success")
+    else:
+        flash("Unknown action.", "error")
+    return redirect(url_for("doctor.consultations"))

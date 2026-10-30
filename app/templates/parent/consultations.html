@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Consultations - Coco NutriCare{% endblock %}
+{% block page_title %}My Consultations{% endblock %}
+
+{% block content %}
+    {% set badges = {"Pending": "badge-warning", "Accepted": "badge-success", "Declined": "badge-danger", "Closed": "badge-muted"} %}
+    {% for c in consultations %}
+        <div class="card reminder-row">
+            <div>
+                <strong>{{ c.reason }}</strong>
+                <div class="muted">{{ c.child.name if c.child else "Pregnancy" }} · {{ c.doctor.name }} · {{ c.created_at.strftime("%b %d, %Y") }}</div>
+                {% if c.description %}<div class="muted">{{ c.description }}</div>{% endif %}
+            </div>
+            <div class="reminder-side">
+                <span class="badge {{ badges[c.status] }}">{{ c.status }}</span>
+            </div>
+        </div>
+    {% else %}
+        <div class="card"><p>No consultations yet. Open a child's profile and click Request Consultation.</p></div>
+    {% endfor %}
+{% endblock %}

@@ -2,6 +2,7 @@ from datetime import datetime
 from app.extensions import db
 
 CONSULTATION_STATUSES = ("Pending", "Accepted", "Declined", "Closed")
+CONSULTATION_REASONS = ("Growth concern", "Nutrition plan question", "Allergy concern", "Vaccination", "General check-up", "Other")
 
 
 class Consultation(db.Model):
