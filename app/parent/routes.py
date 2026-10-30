@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from io import BytesIO
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, send_file
 from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import Child, GrowthRecord, Reminder, Consultation, ChildAllergy, Recommendation, User, DoctorProfile
@@ -9,6 +10,7 @@ from app.models.allergy import COMMON_ALLERGENS, ALLERGY_CATEGORIES, SEVERITIES,
 from app.models.consultation import CONSULTATION_REASONS
 from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
 from app.nutrition import create_recommendation, cross_check
+from app.report import build_child_report
 from app.decorators import role_required
 
 bp = Blueprint("parent", __name__, url_prefix="/parent")
@@ -554,3 +556,12 @@ def consultations():
         .all()
     )
     return render_template("parent/consultations.html", consultations=items)
+
+
+@bp.route("/children/<int:child_id>/report.pdf")
+@role_required("parent")
+def child_report(child_id):
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    pdf = build_child_report(child)
+    filename = f"{child.name.replace(' ', '_')}_CocoNutriCare_Report.pdf"
+    return send_file(BytesIO(pdf), mimetype="application/pdf", as_attachment=True, download_name=filename)
