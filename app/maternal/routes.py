@@ -1,5 +1,5 @@
-from datetime import date, datetime, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from datetime import date, datetime, time, timedelta
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import current_user
 from app.extensions import db
 from app.models import MaternalProfile, Consultation, Reminder, Recommendation
@@ -28,6 +28,9 @@ TRIMESTER_TIPS = {
         "Prepare your hospital bag and delivery plan.",
     ],
 }
+
+MATERNAL_REMINDER_TYPES = ("Medicine", "Checkup", "Vaccination", "Nutrition", "Other")
+ANC_WEEKS = (12, 20, 26, 30, 34, 36, 38, 40)
 
 
 @bp.route("/")
@@ -136,3 +139,154 @@ def regenerate_nutrition():
     create_maternal_recommendation(profile)
     flash("A new nutrition plan has been generated.", "success")
     return redirect(url_for("maternal.nutrition"))
+
+
+def mark_missed_maternal(profile):
+    overdue = Reminder.query.filter(
+        Reminder.maternal_id == profile.id,
+        Reminder.status.in_(["Pending", "Snoozed"]),
+        Reminder.scheduled_at < datetime.now(),
+    ).all()
+    for reminder in overdue:
+        reminder.status = "Missed"
+    if overdue:
+        db.session.commit()
+
+
+def read_maternal_reminder_form():
+    reminder_type = request.form.get("type", "")
+    title = request.form.get("title", "").strip()
+    date_text = request.form.get("date", "")
+    time_text = request.form.get("time", "")
+    errors = []
+    if reminder_type not in MATERNAL_REMINDER_TYPES:
+        errors.append("Please choose a reminder type.")
+    if not title:
+        errors.append("Title is required.")
+    try:
+        scheduled_at = datetime.strptime(f"{date_text} {time_text}", "%Y-%m-%d %H:%M")
+    except ValueError:
+        scheduled_at = None
+        errors.append("Please enter a valid date and time.")
+    return {"type": reminder_type, "title": title, "scheduled_at": scheduled_at}, errors
+
+
+def get_my_reminder(reminder_id):
+    profile = current_user.maternal_profile
+    if profile is None:
+        abort(404)
+    return Reminder.query.filter_by(id=reminder_id, maternal_id=profile.id).first_or_404()
+
+
+@bp.route("/reminders")
+@role_required("mother")
+def reminders():
+    profile = current_user.maternal_profile
+    if profile is None:
+        return redirect(url_for("maternal.edit_profile"))
+    mark_missed_maternal(profile)
+    selected_type = request.args.get("type", "All")
+    query = Reminder.query.filter_by(maternal_id=profile.id)
+    if selected_type in MATERNAL_REMINDER_TYPES:
+        query = query.filter_by(type=selected_type)
+    else:
+        selected_type = "All"
+    items = query.order_by(Reminder.scheduled_at).all()
+    return render_template(
+        "maternal/reminders.html",
+        reminders=items,
+        types=MATERNAL_REMINDER_TYPES,
+        selected_type=selected_type,
+        today=date.today(),
+    )
+
+
+@bp.route("/reminders/add", methods=["GET", "POST"])
+@role_required("mother")
+def add_reminder():
+    profile = current_user.maternal_profile
+    if profile is None:
+        return redirect(url_for("maternal.edit_profile"))
+    if request.method == "POST":
+        data, errors = read_maternal_reminder_form()
+        if errors:
+            for error in errors:
+                flash(error, "error")
+        else:
+            db.session.add(Reminder(maternal_id=profile.id, **data))
+            db.session.commit()
+            flash("Reminder added.", "success")
+            return redirect(url_for("maternal.reminders"))
+    return render_template("maternal/reminder_form.html", reminder=None, types=MATERNAL_REMINDER_TYPES)
+
+
+@bp.route("/reminders/<int:reminder_id>/edit", methods=["GET", "POST"])
+@role_required("mother")
+def edit_reminder(reminder_id):
+    reminder = get_my_reminder(reminder_id)
+    if request.method == "POST":
+        data, errors = read_maternal_reminder_form()
+        if errors:
+            for error in errors:
+                flash(error, "error")
+        else:
+            for key, value in data.items():
+                setattr(reminder, key, value)
+            if reminder.status == "Missed" and reminder.scheduled_at > datetime.now():
+                reminder.status = "Pending"
+            db.session.commit()
+            flash("Reminder updated.", "success")
+            return redirect(url_for("maternal.reminders"))
+    return render_template("maternal/reminder_form.html", reminder=reminder, types=MATERNAL_REMINDER_TYPES)
+
+
+@bp.route("/reminders/<int:reminder_id>/delete", methods=["POST"])
+@role_required("mother")
+def delete_reminder(reminder_id):
+    reminder = get_my_reminder(reminder_id)
+    db.session.delete(reminder)
+    db.session.commit()
+    flash("Reminder deleted.", "success")
+    return redirect(url_for("maternal.reminders"))
+
+
+@bp.route("/reminders/<int:reminder_id>/status", methods=["POST"])
+@role_required("mother")
+def update_reminder_status(reminder_id):
+    reminder = get_my_reminder(reminder_id)
+    action = request.form.get("action", "")
+    if action == "complete":
+        reminder.status = "Completed"
+        flash(f"'{reminder.title}' marked as completed.", "success")
+    elif action == "snooze":
+        reminder.scheduled_at = max(reminder.scheduled_at, datetime.now()) + timedelta(days=1)
+        reminder.status = "Snoozed"
+        flash(f"'{reminder.title}' snoozed for 1 day.", "success")
+    else:
+        flash("Unknown action.", "error")
+        return redirect(url_for("maternal.reminders"))
+    db.session.commit()
+    return redirect(url_for("maternal.reminders"))
+
+
+@bp.route("/reminders/antenatal", methods=["POST"])
+@role_required("mother")
+def add_antenatal_schedule():
+    profile = current_user.maternal_profile
+    if profile is None:
+        return redirect(url_for("maternal.edit_profile"))
+    existing = {r.title for r in Reminder.query.filter_by(maternal_id=profile.id, type="Checkup").all()}
+    added = 0
+    for week in ANC_WEEKS:
+        when = datetime.combine(profile.due_date - timedelta(weeks=40 - week), time(10, 0))
+        title = f"Antenatal check-up (week {week})"
+        if when <= datetime.now() or title in existing:
+            continue
+        db.session.add(Reminder(maternal_id=profile.id, type="Checkup", title=title, scheduled_at=when))
+        added += 1
+    db.session.commit()
+    if added:
+        flash(f"{added} antenatal check-up reminders added.", "success")
+    else:
+        flash("Your upcoming antenatal check-ups are already scheduled.", "success")
+    return redirect(url_for("maternal.reminders", type="Checkup"))
