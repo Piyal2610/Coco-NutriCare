@@ -1,8 +1,10 @@
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from urllib.parse import urlparse
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, session
 from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import Consultation, Message
+from app.i18n import LANGUAGES
 
 bp = Blueprint("main", __name__)
 
@@ -65,3 +67,11 @@ def close_consultation(consult_id):
     else:
         flash("Only an accepted consultation can be closed.", "error")
     return redirect(url_for("main.consultation_messages", consult_id=consult.id))
+@bp.route("/lang/<code>")
+def set_language(code):
+    if code in LANGUAGES:
+        session["lang"] = code
+    target = request.referrer
+    if not target or urlparse(target).netloc != request.host:
+        target = url_for("main.index")
+    return redirect(target)

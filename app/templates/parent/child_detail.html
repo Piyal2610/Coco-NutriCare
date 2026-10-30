@@ -7,43 +7,43 @@
     <h2>{{ child.name }}</h2>
 
     <div class="card info-card">
-        <h3>Basic Information</h3>
-        <div class="info-row"><span>Date of Birth</span><strong>{{ child.date_of_birth.strftime("%b %d, %Y") }}</strong></div>
-        <div class="info-row"><span>Gender</span><strong>{{ child.gender|capitalize }}</strong></div>
-        <div class="info-row"><span>Age</span><strong>{{ child.age_display }}</strong></div>
+        <h3>{{ t("Basic Information") }}</h3>
+        <div class="info-row"><span>{{ t("Date of Birth") }}</span><strong>{{ child.date_of_birth.strftime("%b %d, %Y") }}</strong></div>
+        <div class="info-row"><span>{{ t("Gender") }}</span><strong>{{ child.gender|capitalize }}</strong></div>
+        <div class="info-row"><span>{{ t("Age") }}</span><strong>{{ child.age_display }}</strong></div>
     </div>
 
     <div class="card info-card">
-        <h3>Physical Information</h3>
+        <h3>{{ t("Physical Information") }}</h3>
         {% if latest %}
-            <div class="info-row"><span>Height</span><strong>{{ latest.height_cm }} cm</strong></div>
-            <div class="info-row"><span>Weight</span><strong>{{ latest.weight_kg }} kg</strong></div>
-            <div class="info-row"><span>Last measured</span><strong>{{ latest.date.strftime("%b %d, %Y") }}</strong></div>
-            <div class="info-row"><span>WHO Weight Percentile</span><strong>{% if latest.percentile is not none %}{{ latest.percentile }}{% else %}Available for ages 0-5{% endif %}</strong></div>
-            <div class="info-row"><span>Growth Trend</span><strong>{{ latest.trend|capitalize if latest.trend else "Not enough records" }}</strong></div>
+            <div class="info-row"><span>{{ t("Height") }}</span><strong>{{ latest.height_cm }} cm</strong></div>
+            <div class="info-row"><span>{{ t("Weight") }}</span><strong>{{ latest.weight_kg }} kg</strong></div>
+            <div class="info-row"><span>{{ t("Last measured") }}</span><strong>{{ latest.date.strftime("%b %d, %Y") }}</strong></div>
+            <div class="info-row"><span>{{ t("WHO Weight Percentile") }}</span><strong>{% if latest.percentile is not none %}{{ latest.percentile }}{% else %}Available for ages 0-5{% endif %}</strong></div>
+            <div class="info-row"><span>{{ t("Growth Trend") }}</span><strong>{{ latest.trend|capitalize if latest.trend else "Not enough records" }}</strong></div>
         {% else %}
-            <p class="muted">No growth records yet.</p>
+            <p class="muted">{{ t("No growth records yet.") }}</p>
         {% endif %}
-        <a href="{{ url_for('parent.add_growth_record', child_id=child.id) }}" class="btn btn-orange btn-block">+ Add Growth Record</a>
-        <a href="{{ url_for('parent.growth_tracking', child_id=child.id) }}" class="btn btn-block">View Growth Chart</a>
-        <div class="info-row"><span>Nutrition plan</span>{% if plan_rec %}<span class="badge {{ {'Approved': 'badge-success', 'Flagged': 'badge-danger'}.get(plan_rec.review_status, 'badge-warning') }}">{{ plan_rec.review_status }}</span>{% else %}<strong>Not generated</strong>{% endif %}</div>
-        <a href="{{ url_for('parent.nutrition_plan', child_id=child.id) }}" class="btn btn-orange btn-block">Nutrition Plan</a>
+        <a href="{{ url_for('parent.add_growth_record', child_id=child.id) }}" class="btn btn-orange btn-block">{{ t("+ Add Growth Record") }}</a>
+        <a href="{{ url_for('parent.growth_tracking', child_id=child.id) }}" class="btn btn-block">{{ t("View Growth Chart") }}</a>
+        <div class="info-row"><span>{{ t("Nutrition plan") }}</span>{% if plan_rec %}<span class="badge {{ {'Approved': 'badge-success', 'Flagged': 'badge-danger'}.get(plan_rec.review_status, 'badge-warning') }}">{{ plan_rec.review_status }}</span>{% else %}<strong>{{ t("Not generated") }}</strong>{% endif %}</div>
+        <a href="{{ url_for('parent.nutrition_plan', child_id=child.id) }}" class="btn btn-orange btn-block">{{ t("Nutrition Plan") }}</a>
     </div>
     <div class="card info-card">
-        <h3>Allergy Information</h3>
+        <h3>{{ t("Allergy Information") }}</h3>
         {% set food = child.allergies|selectattr("category", "equalto", "Food")|map(attribute="allergen")|join(", ") %}
         {% set medicine = child.allergies|selectattr("category", "equalto", "Medicine")|map(attribute="allergen")|join(", ") %}
-        <div class="info-row"><span>Food Allergies</span><strong>{{ food or ("Not sure" if child.allergy_status == "not_sure" else "None") }}</strong></div>
-        <div class="info-row"><span>Medicine Allergies</span><strong>{{ medicine or "None" }}</strong></div>
-        <a href="{{ url_for('parent.child_allergies', child_id=child.id) }}" class="btn btn-block">Manage Allergies</a>
+        <div class="info-row"><span>{{ t("Food Allergies") }}</span><strong>{{ food or ("Not sure" if child.allergy_status == "not_sure" else "None") }}</strong></div>
+        <div class="info-row"><span>{{ t("Medicine Allergies") }}</span><strong>{{ medicine or "None" }}</strong></div>
+        <a href="{{ url_for('parent.child_allergies', child_id=child.id) }}" class="btn btn-block">{{ t("Manage Allergies") }}</a>
     </div>
 
     <div class="card info-card">
-        <h3>Dietary Habits</h3>
-        <div class="info-row"><span>Preferences</span><strong>{{ child.dietary_habits or "Not set" }}</strong></div>
+        <h3>{{ t("Dietary Habits") }}</h3>
+        <div class="info-row"><span>{{ t("Preferences") }}</span><strong>{{ child.dietary_habits or "Not set" }}</strong></div>
     </div>
 
-    <a href="{{ url_for('parent.request_consultation', child_id=child.id) }}" class="btn btn-orange btn-block">Request Consultation</a>
-    <a href="{{ url_for('parent.child_report', child_id=child.id) }}" class="btn btn-block">Download PDF Report</a>
-    <a href="{{ url_for('parent.edit_child', child_id=child.id) }}" class="btn btn-block">Edit Profile</a>
+    <a href="{{ url_for('parent.request_consultation', child_id=child.id) }}" class="btn btn-orange btn-block">{{ t("Request Consultation") }}</a>
+    <a href="{{ url_for('parent.child_report', child_id=child.id) }}" class="btn btn-block">{{ t("Download PDF Report") }}</a>
+    <a href="{{ url_for('parent.edit_child', child_id=child.id) }}" class="btn btn-block">{{ t("Edit Profile") }}</a>
 {% endblock %}
