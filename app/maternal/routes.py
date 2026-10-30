@@ -2,7 +2,8 @@ from datetime import date, datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from app.extensions import db
-from app.models import MaternalProfile, Consultation, Reminder
+from app.models import MaternalProfile, Consultation, Reminder, Recommendation
+from app.nutrition import create_maternal_recommendation
 from app.models.maternal_profile import MATERNAL_CONDITIONS
 from app.models.consultation import CONSULTATION_REASONS
 from app.decorators import role_required
@@ -112,3 +113,26 @@ def request_consultation():
             flash(f"Consultation request sent to {doctor.name}.", "success")
             return redirect(url_for("maternal.index"))
     return render_template("maternal/consult_form.html", doctors=doctors, reasons=CONSULTATION_REASONS)
+@bp.route("/nutrition")
+@role_required("mother")
+def nutrition():
+    profile = current_user.maternal_profile
+    if profile is None:
+        return redirect(url_for("maternal.edit_profile"))
+    rec = Recommendation.query.filter_by(maternal_id=profile.id).order_by(Recommendation.id.desc()).first()
+    plan = rec.plan if rec else None
+    if plan and plan.get("type") != "maternal":
+        plan = None
+    outdated = bool(plan) and (plan["conditions"] != profile.condition_labels or plan["trimester"] != profile.trimester)
+    return render_template("maternal/nutrition.html", profile=profile, plan=plan, rec=rec, outdated=outdated)
+
+
+@bp.route("/nutrition/regenerate", methods=["POST"])
+@role_required("mother")
+def regenerate_nutrition():
+    profile = current_user.maternal_profile
+    if profile is None:
+        return redirect(url_for("maternal.edit_profile"))
+    create_maternal_recommendation(profile)
+    flash("A new nutrition plan has been generated.", "success")
+    return redirect(url_for("maternal.nutrition"))
