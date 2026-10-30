@@ -144,3 +144,10 @@ a { color: var(--accent); }
 .data-table th, .data-table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
 .data-table th { color: var(--muted); font-weight: 600; }
 .readonly-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+
+.progress { height: 10px; background: var(--border); border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
+.progress-bar { height: 100%; background: var(--accent); }
+.badge-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.check-list { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 12px; }
+.tips li { margin-bottom: 6px; }
+

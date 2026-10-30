@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Request Consultation - Coco NutriCare{% endblock %}
+{% block page_title %}<a href="{{ url_for('maternal.index') }}">Dashboard</a> / Request Consultation{% endblock %}
+
+{% block content %}
+    <div class="card form-card">
+        {% if doctors %}
+            <form method="POST">
+                <label>Doctor</label>
+                <select name="doctor_id" required>
+                    <option value="">Select a verified doctor</option>
+                    {% for d in doctors %}
+                        <option value="{{ d.id }}" {% if request.form.get('doctor_id') == d.id|string %}selected{% endif %}>{{ d.name }} · {{ d.doctor_profile.specialization }} · {{ d.doctor_profile.experience_years }} yrs</option>
+                    {% endfor %}
+                </select>
+
+                <label>Reason</label>
+                <select name="reason" required>
+                    <option value="">Select a reason</option>
+                    {% for r in reasons %}
+                        <option value="{{ r }}" {% if request.form.get('reason') == r %}selected{% endif %}>{{ r }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Details (optional)</label>
+                <textarea name="description" rows="4" placeholder="Describe your concern">{{ request.form.get('description', '') }}</textarea>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-orange">Send Request</button>
+                    <a href="{{ url_for('maternal.index') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        {% else %}
+            <p>No verified doctors are available right now. Please try again later.</p>
+        {% endif %}
+    </div>
+{% endblock %}

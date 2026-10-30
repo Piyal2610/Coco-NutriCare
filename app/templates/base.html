@@ -23,6 +23,8 @@
                     <a href="{{ url_for('doctor.patients') }}">My Patients</a>
                 {% elif current_user.role == "mother" %}
                     <a href="{{ url_for('maternal.index') }}">Dashboard</a>
+                    <a href="{{ url_for('maternal.edit_profile') }}">My Profile</a>
+                    <a href="{{ url_for('maternal.request_consultation') }}">Request Consultation</a>
                 {% elif current_user.role == "admin" %}
                     <a href="{{ url_for('admin.index') }}">Dashboard</a>
                     <a href="{{ url_for('admin.doctors') }}">Doctor Verification</a>
