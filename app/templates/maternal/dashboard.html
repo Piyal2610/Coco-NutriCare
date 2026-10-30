@@ -30,7 +30,7 @@
 
     <div class="stat-grid">
         <div class="card"><span class="muted">TRIMESTER</span><div class="stat">{{ profile.trimester }}</div></div>
-        <div class="card"><span class="muted">REMINDERS</span><div class="stat">{{ reminder_count }}</div></div>
+        <a href="{{ url_for('maternal.reminders') }}" class="card"><span class="muted">REMINDERS</span><div class="stat">{{ reminder_count }}</div></a>
         <div class="card"><span class="muted">CONSULTATIONS</span><div class="stat">{{ consults|selectattr("status", "in", ["Pending", "Accepted"])|list|length }}</div></div>
     </div>
 
