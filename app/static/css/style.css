@@ -132,3 +132,10 @@ a { color: var(--accent); }
 .review-actions { display: flex; gap: 8px; }
 
 .form-card textarea { width: 100%; padding: 8px; margin-top: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+
+.chat-log { max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.bubble { max-width: 75%; padding: 10px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); align-self: flex-start; }
+.bubble.mine { align-self: flex-end; background: var(--btn); border-color: var(--btn); color: #fff; }
+.bubble .meta { font-size: 12px; opacity: 0.75; margin-bottom: 4px; }
+.bubble-text { white-space: pre-wrap; word-wrap: break-word; }
+.chat-form textarea { width: 100%; padding: 8px; margin-bottom: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit; }

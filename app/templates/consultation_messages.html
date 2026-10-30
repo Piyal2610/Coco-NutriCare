@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Consultation Chat - Coco NutriCare{% endblock %}
+{% block page_title %}<a href="{{ back }}">Consultations</a> / Chat{% endblock %}
+
+{% block content %}
+    {% set badges = {"Pending": "badge-warning", "Accepted": "badge-success", "Declined": "badge-danger", "Closed": "badge-muted"} %}
+    <div class="card info-card">
+        <h3>{{ consult.reason }}</h3>
+        <div class="info-row">
+            <span>Patient</span>
+            <strong>{% if consult.child %}{{ consult.child.name }} · Age {{ consult.child.age_display }}{% elif consult.maternal %}{{ consult.maternal.user.name }} · Week {{ consult.maternal.pregnancy_week }}{% endif %}</strong>
+        </div>
+        <div class="info-row"><span>With</span><strong>{{ other.name }}</strong></div>
+        <div class="info-row"><span>Status</span><span class="badge {{ badges[consult.status] }}">{{ consult.status }}</span></div>
+    </div>
+
+    <div class="card">
+        <div class="chat-log" id="chat-log">
+            {% for m in consult.messages %}
+                <div class="bubble {{ 'mine' if m.sender_id == current_user.id }}">
+                    <div class="meta">{{ m.sender.name }} · {{ m.sent_at.strftime("%b %d, %I:%M %p") }}</div>
+                    <div class="bubble-text">{{ m.text }}</div>
+                </div>
+            {% else %}
+                <p class="muted">No messages yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if consult.status == "Accepted" %}
+        <form method="POST" class="card chat-form">
+            <textarea name="text" id="message-box" rows="3" maxlength="2000" placeholder="Type your message" required></textarea>
+            <div class="review-actions">
+                <button type="submit" class="btn">Send</button>
+            </div>
+        </form>
+        <form method="POST" action="{{ url_for('main.close_consultation', consult_id=consult.id) }}" onsubmit="return confirm('Close this consultation? No more messages can be sent.');">
+            <button type="submit" class="btn btn-secondary btn-block">Close Consultation</button>
+        </form>
+    {% elif consult.status == "Pending" %}
+        <p class="muted">Waiting for the doctor to accept this request.</p>
+    {% else %}
+        <p class="muted">This consultation is {{ consult.status|lower }}. Messages are read-only.</p>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var log = document.getElementById("chat-log");
+    if (log) { log.scrollTop = log.scrollHeight; }
+    setInterval(function () {
+        var box = document.getElementById("message-box");
+        if (box && box.value.trim() === "") { window.location.reload(); }
+    }, 15000);
+</script>
+{% endblock %}

@@ -26,6 +26,9 @@
             {% if c.responded_at %}
                 <div class="info-row"><span>Responded on</span><strong>{{ c.responded_at.strftime("%b %d, %Y %I:%M %p") }}</strong></div>
             {% endif %}
+            {% if c.status in ["Accepted", "Closed"] %}
+                <a href="{{ url_for('main.consultation_messages', consult_id=c.id) }}" class="btn btn-small">Open Chat</a>
+            {% endif %}
             {% if c.status == "Pending" %}
                 <form method="POST" action="{{ url_for('doctor.respond_consultation', consult_id=c.id) }}" class="doctor-actions">
                     <button type="submit" name="action" value="accept" class="btn">Accept</button>

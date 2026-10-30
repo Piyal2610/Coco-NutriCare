@@ -14,6 +14,7 @@
             </div>
             <div class="reminder-side">
                 <span class="badge {{ badges[c.status] }}">{{ c.status }}</span>
+                {% if c.status in ["Accepted", "Closed"] %}<a href="{{ url_for('main.consultation_messages', consult_id=c.id) }}">Open Chat</a>{% endif %}
             </div>
         </div>
     {% else %}
