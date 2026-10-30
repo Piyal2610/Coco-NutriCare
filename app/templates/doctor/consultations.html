@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Consultations - Coco NutriCare{% endblock %}
+{% block page_title %}Consultation Requests{% endblock %}
+
+{% block content %}
+    <div class="filter-chips">
+        {% for s in statuses %}
+            <a href="{{ url_for('doctor.consultations', status=s) }}" class="chip {{ 'chip-active' if status == s }}">{{ s }} ({{ counts[s] }})</a>
+        {% endfor %}
+    </div>
+
+    {% for c in items %}
+        <div class="card info-card">
+            <h3>{{ c.reason }}</h3>
+            {% if c.child %}
+                <div class="info-row"><span>Patient</span><strong>{{ c.child.name }} · Age {{ c.child.age_display }}</strong></div>
+            {% elif c.maternal %}
+                <div class="info-row"><span>Patient</span><strong>{{ c.maternal.user.name }} · Week {{ c.maternal.pregnancy_week }}</strong></div>
+            {% endif %}
+            <div class="info-row"><span>Requested by</span><strong>{{ c.requester.name }}</strong></div>
+            <div class="info-row"><span>Requested on</span><strong>{{ c.created_at.strftime("%b %d, %Y %I:%M %p") }}</strong></div>
+            {% if c.description %}
+                <div class="info-row"><span>Details</span><strong>{{ c.description }}</strong></div>
+            {% endif %}
+            {% if c.responded_at %}
+                <div class="info-row"><span>Responded on</span><strong>{{ c.responded_at.strftime("%b %d, %Y %I:%M %p") }}</strong></div>
+            {% endif %}
+            {% if c.status == "Pending" %}
+                <form method="POST" action="{{ url_for('doctor.respond_consultation', consult_id=c.id) }}" class="doctor-actions">
+                    <button type="submit" name="action" value="accept" class="btn">Accept</button>
+                    <button type="submit" name="action" value="decline" class="btn btn-danger">Decline</button>
+                </form>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="card"><p>No {{ status|lower }} consultations.</p></div>
+    {% endfor %}
+{% endblock %}

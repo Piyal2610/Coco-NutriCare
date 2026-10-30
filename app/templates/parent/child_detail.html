@@ -43,5 +43,6 @@
         <div class="info-row"><span>Preferences</span><strong>{{ child.dietary_habits or "Not set" }}</strong></div>
     </div>
 
+    <a href="{{ url_for('parent.request_consultation', child_id=child.id) }}" class="btn btn-orange btn-block">Request Consultation</a>
     <a href="{{ url_for('parent.edit_child', child_id=child.id) }}" class="btn btn-block">Edit Profile</a>
 {% endblock %}

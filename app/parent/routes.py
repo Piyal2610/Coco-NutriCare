@@ -2,10 +2,11 @@ from datetime import date, datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Child, GrowthRecord, Reminder, Consultation, ChildAllergy, Recommendation
+from app.models import Child, GrowthRecord, Reminder, Consultation, ChildAllergy, Recommendation, User, DoctorProfile
 from app.models.child import GENDERS, ALLERGY_STATUSES
 from app.models.reminder import REMINDER_TYPES
 from app.models.allergy import COMMON_ALLERGENS, ALLERGY_CATEGORIES, SEVERITIES, REACTION_SYMPTOMS
+from app.models.consultation import CONSULTATION_REASONS
 from app.growth import weight_percentile, growth_trend, update_growth_records, weight_at_z, growth_alert
 from app.nutrition import create_recommendation, cross_check
 from app.decorators import role_required
@@ -498,3 +499,57 @@ def regenerate_plan(child_id):
     except ValueError:
         flash("Could not create a safe plan. Please check the allergy list.", "error")
     return redirect(url_for("parent.nutrition_plan", child_id=child.id))
+
+
+def verified_doctors():
+    return (
+        User.query.join(DoctorProfile, DoctorProfile.user_id == User.id)
+        .filter(User.role == "doctor", DoctorProfile.verification_status == "Verified")
+        .order_by(User.name)
+        .all()
+    )
+
+
+@bp.route("/children/<int:child_id>/consult", methods=["GET", "POST"])
+@role_required("parent")
+def request_consultation(child_id):
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first_or_404()
+    doctors = verified_doctors()
+    if request.method == "POST":
+        doctor_id = request.form.get("doctor_id", type=int)
+        reason = request.form.get("reason", "")
+        description = request.form.get("description", "").strip()
+        doctor = next((d for d in doctors if d.id == doctor_id), None)
+        if doctor is None:
+            flash("Please choose a verified doctor.", "error")
+        elif reason not in CONSULTATION_REASONS:
+            flash("Please choose a reason.", "error")
+        elif Consultation.query.filter(
+            Consultation.child_id == child.id,
+            Consultation.doctor_id == doctor.id,
+            Consultation.status.in_(["Pending", "Accepted"]),
+        ).first():
+            flash(f"You already have an open consultation with {doctor.name} for {child.name}.", "error")
+        else:
+            db.session.add(Consultation(
+                requester_id=current_user.id,
+                doctor_id=doctor.id,
+                child_id=child.id,
+                reason=reason,
+                description=description or None,
+            ))
+            db.session.commit()
+            flash(f"Consultation request sent to {doctor.name}.", "success")
+            return redirect(url_for("parent.consultations"))
+    return render_template("parent/consult_form.html", child=child, doctors=doctors, reasons=CONSULTATION_REASONS)
+
+
+@bp.route("/consultations")
+@role_required("parent")
+def consultations():
+    items = (
+        Consultation.query.filter_by(requester_id=current_user.id)
+        .order_by(Consultation.created_at.desc())
+        .all()
+    )
+    return render_template("parent/consultations.html", consultations=items)

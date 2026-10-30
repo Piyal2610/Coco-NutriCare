@@ -15,9 +15,11 @@
                     <a href="{{ url_for('parent.index') }}">Dashboard</a>
                     <a href="{{ url_for('parent.children') }}">My Children</a>
                     <a href="{{ url_for('parent.reminders') }}">Reminders</a>
+                    <a href="{{ url_for('parent.consultations') }}">Consultations</a>
                 {% elif current_user.role == "doctor" %}
                     <a href="{{ url_for('doctor.index') }}">Dashboard</a>
                     <a href="{{ url_for('doctor.reviews') }}">Review Queue</a>
+                    <a href="{{ url_for('doctor.consultations') }}">Consultations</a>
                 {% elif current_user.role == "mother" %}
                     <a href="{{ url_for('maternal.index') }}">Dashboard</a>
                 {% elif current_user.role == "admin" %}
