@@ -25,6 +25,7 @@
         </div>
         <div class="info-row"><span>Dietary habits</span><strong>{{ profile.dietary_habits or "Not set" }}</strong></div>
         <a href="{{ url_for('maternal.edit_profile') }}" class="btn btn-block">Edit Profile</a>
+        <a href="{{ url_for('maternal.nutrition') }}" class="btn btn-orange btn-block">Nutrition Plan</a>
     </div>
 
     <div class="stat-grid">

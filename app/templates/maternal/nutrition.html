@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Maternal Nutrition - Coco NutriCare{% endblock %}
+{% block page_title %}<a href="{{ url_for('maternal.index') }}">Dashboard</a> / Nutrition Plan{% endblock %}
+
+{% block content %}
+    <h2 class="greeting">Your Nutrition Plan</h2>
+    <p class="muted subtitle">Week {{ profile.pregnancy_week }} · {{ profile.trimester }} trimester{% if profile.condition_labels %} · {{ profile.condition_labels|join(", ") }}{% endif %}</p>
+
+    {% if not plan %}
+        <div class="card info-card">
+            <p>No nutrition plan yet. Generate one based on your trimester and conditions.</p>
+        </div>
+    {% else %}
+        {% if outdated %}
+            <div class="card alert-card">
+                <h3>Plan out of date</h3>
+                <p>Your conditions or trimester changed after this plan was made. Please generate a new plan.</p>
+            </div>
+        {% endif %}
+
+        <div class="card info-card">
+            <h3>Daily Nutrition Target</h3>
+            <div class="info-row"><span>Calories</span><strong>{{ plan.targets.calories }} kcal</strong></div>
+            <div class="info-row"><span>Protein</span><strong>{{ plan.targets.protein_g }} g</strong></div>
+            <div class="info-row"><span>Iron</span><strong>{{ plan.targets.iron_mg }} mg</strong></div>
+            <div class="info-row"><span>Calcium</span><strong>{{ plan.targets.calcium_mg }} mg</strong></div>
+            <div class="info-row"><span>Folate</span><strong>{{ plan.targets.folate_mcg }} mcg</strong></div>
+        </div>
+
+        {% for meal, foods in plan.meals.items() %}
+            <div class="card info-card">
+                <h3>{{ meal }}</h3>
+                <p>{{ foods|join(" · ") }}</p>
+            </div>
+        {% endfor %}
+
+        <div class="card info-card">
+            <h3>Condition Check</h3>
+            {% for s in plan.swaps %}
+                <p class="text-accent">Swapped: {{ s.from }} &rarr; {{ s.to }}</p>
+            {% endfor %}
+            {% if plan.avoided %}
+                <p class="muted">Kept out for your conditions: {{ plan.avoided|join(", ") }}</p>
+            {% elif not plan.swaps %}
+                <p class="muted">No foods needed to be changed.</p>
+            {% endif %}
+            <ul class="tips">
+                {% for note in plan.notes %}<li>{{ note }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="card disclaimer-card">
+        <strong>Medical disclaimer</strong>
+        <p class="muted">This plan is general guidance based on pregnancy reference values and the conditions you entered. It is not medical advice. Always follow your doctor's or dietitian's advice, especially for gestational diabetes, hypertension, anemia or thyroid treatment.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('maternal.regenerate_nutrition') }}">
+        <button type="submit" class="btn btn-orange btn-block">{{ "Regenerate Plan" if plan else "Generate Plan" }}</button>
+    </form>
+{% endblock %}
