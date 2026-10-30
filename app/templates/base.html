@@ -20,6 +20,7 @@
                     <a href="{{ url_for('doctor.index') }}">Dashboard</a>
                     <a href="{{ url_for('doctor.reviews') }}">Review Queue</a>
                     <a href="{{ url_for('doctor.consultations') }}">Consultations</a>
+                    <a href="{{ url_for('doctor.patients') }}">My Patients</a>
                 {% elif current_user.role == "mother" %}
                     <a href="{{ url_for('maternal.index') }}">Dashboard</a>
                 {% elif current_user.role == "admin" %}

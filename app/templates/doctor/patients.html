@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}My Patients - Coco NutriCare{% endblock %}
+{% block page_title %}My Patients{% endblock %}
+
+{% block content %}
+    <p class="readonly-note">Children whose consultation you accepted. Records are read-only.</p>
+    {% for child in children %}
+        <a href="{{ url_for('doctor.patient_record', child_id=child.id) }}" class="card child-row">
+            <div>
+                <strong>{{ child.name }}</strong>
+                <span class="muted">Age {{ child.age_display }} · Parent: {{ child.parent.name }}</span>
+            </div>
+            <span class="muted">View Record</span>
+        </a>
+    {% else %}
+        <div class="card"><p>No patients yet. Accept a consultation request to see the child's record.</p></div>
+    {% endfor %}
+{% endblock %}

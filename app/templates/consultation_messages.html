@@ -12,6 +12,9 @@
             <strong>{% if consult.child %}{{ consult.child.name }} · Age {{ consult.child.age_display }}{% elif consult.maternal %}{{ consult.maternal.user.name }} · Week {{ consult.maternal.pregnancy_week }}{% endif %}</strong>
         </div>
         <div class="info-row"><span>With</span><strong>{{ other.name }}</strong></div>
+        {% if current_user.id == consult.doctor_id and consult.child and consult.status in ["Accepted", "Closed"] %}
+            <a href="{{ url_for('doctor.patient_record', child_id=consult.child.id) }}" class="btn btn-small btn-secondary">View Patient Record</a>
+        {% endif %}
         <div class="info-row"><span>Status</span><span class="badge {{ badges[consult.status] }}">{{ consult.status }}</span></div>
     </div>
 

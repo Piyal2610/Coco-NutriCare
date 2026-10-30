@@ -1,13 +1,14 @@
 from datetime import datetime
 import re
 from sqlalchemy import func, select
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import current_user
 from app.extensions import db
-from app.models import DoctorProfile, Recommendation, Consultation
+from app.models import DoctorProfile, Recommendation, Consultation, Child, Reminder
 from app.models.consultation import CONSULTATION_STATUSES
 from app.models.recommendation import REVIEW_STATUSES
 from app.nutrition import cross_check
+from app.growth import growth_alert
 from app.decorators import role_required, verified_doctor_required
 
 bp = Blueprint("doctor", __name__, url_prefix="/doctor")
@@ -159,3 +160,51 @@ def respond_consultation(consult_id):
     else:
         flash("Unknown action.", "error")
     return redirect(url_for("doctor.consultations"))
+
+
+def doctor_child_ids():
+    rows = (
+        Consultation.query.with_entities(Consultation.child_id)
+        .filter(
+            Consultation.doctor_id == current_user.id,
+            Consultation.child_id.is_not(None),
+            Consultation.status.in_(["Accepted", "Closed"]),
+        )
+        .distinct()
+        .all()
+    )
+    return [row.child_id for row in rows]
+
+
+@bp.route("/patients")
+@verified_doctor_required
+def patients():
+    children = Child.query.filter(Child.id.in_(doctor_child_ids())).order_by(Child.name).all()
+    return render_template("doctor/patients.html", children=children)
+
+
+@bp.route("/patients/<int:child_id>")
+@verified_doctor_required
+def patient_record(child_id):
+    if child_id not in doctor_child_ids():
+        abort(404)
+    child = db.get_or_404(Child, child_id)
+    records = child.growth_records
+    latest = records[-1] if records else None
+    plan_rec = Recommendation.query.filter_by(child_id=child.id).order_by(Recommendation.id.desc()).first()
+    reminders = Reminder.query.filter_by(child_id=child.id).order_by(Reminder.scheduled_at.desc()).all()
+    consults = (
+        Consultation.query.filter_by(child_id=child.id, doctor_id=current_user.id)
+        .order_by(Consultation.created_at.desc())
+        .all()
+    )
+    return render_template(
+        "doctor/patient_record.html",
+        child=child,
+        records=records,
+        latest=latest,
+        alert=growth_alert(latest),
+        plan_rec=plan_rec,
+        reminders=reminders,
+        consults=consults,
+    )

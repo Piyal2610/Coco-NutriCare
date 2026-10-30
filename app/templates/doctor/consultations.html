@@ -28,6 +28,7 @@
             {% endif %}
             {% if c.status in ["Accepted", "Closed"] %}
                 <a href="{{ url_for('main.consultation_messages', consult_id=c.id) }}" class="btn btn-small">Open Chat</a>
+                {% if c.child %}<a href="{{ url_for('doctor.patient_record', child_id=c.child.id) }}" class="btn btn-small btn-secondary">View Patient Record</a>{% endif %}
             {% endif %}
             {% if c.status == "Pending" %}
                 <form method="POST" action="{{ url_for('doctor.respond_consultation', consult_id=c.id) }}" class="doctor-actions">

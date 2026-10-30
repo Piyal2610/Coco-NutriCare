@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Record - {{ child.name }}{% endblock %}
+{% block page_title %}<a href="{{ url_for('doctor.patients') }}">My Patients</a> / {{ child.name }}{% endblock %}
+
+{% block content %}
+    {% set rem_badges = {"Pending": "badge-muted", "Completed": "badge-success", "Snoozed": "badge-warning", "Missed": "badge-danger"} %}
+    {% set sev_badges = {"Mild": "badge-muted", "Moderate": "badge-warning", "Severe": "badge-danger"} %}
+    {% set status_labels = {"known": "Known allergies", "not_sure": "Not sure", "none": "No allergies"} %}
+    <p class="readonly-note">Read-only record shared through your consultation with {{ child.parent.name }}.</p>
+
+    {% if alert %}
+        <div class="card alert-card">
+            <h3>Growth Alert</h3>
+            <p>{{ alert }}</p>
+        </div>
+    {% endif %}
+
+    <div class="card info-card">
+        <h3>Basic Information</h3>
+        <div class="info-row"><span>Age</span><strong>{{ child.age_display }}</strong></div>
+        <div class="info-row"><span>Date of Birth</span><strong>{{ child.date_of_birth.strftime("%b %d, %Y") }}</strong></div>
+        <div class="info-row"><span>Gender</span><strong>{{ child.gender|capitalize }}</strong></div>
+        <div class="info-row"><span>Dietary Habits</span><strong>{{ child.dietary_habits or "Not set" }}</strong></div>
+        <div class="info-row"><span>Parent</span><strong>{{ child.parent.name }} · {{ child.parent.email }}{% if child.parent.phone %} · {{ child.parent.phone }}{% endif %}</strong></div>
+    </div>
+
+    <div class="card info-card">
+        <h3>Growth</h3>
+        {% if latest %}
+            <div class="info-row"><span>Latest weight / height</span><strong>{{ latest.weight_kg }} kg · {{ latest.height_cm }} cm</strong></div>
+            <div class="info-row"><span>WHO weight percentile</span><strong>{{ latest.percentile if latest.percentile is not none else "N/A" }}</strong></div>
+            <div class="info-row"><span>Trend</span><strong>{{ latest.trend|capitalize if latest.trend else "N/A" }}</strong></div>
+            <table class="data-table">
+                <tr><th>Date</th><th>Weight (kg)</th><th>Height (cm)</th><th>Percentile</th><th>Trend</th></tr>
+                {% for r in records|reverse %}
+                    <tr>
+                        <td>{{ r.date.strftime("%b %d, %Y") }}</td>
+                        <td>{{ r.weight_kg }}</td>
+                        <td>{{ r.height_cm }}</td>
+                        <td>{{ r.percentile if r.percentile is not none else "N/A" }}</td>
+                        <td>{{ r.trend|capitalize if r.trend else "N/A" }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p class="muted">No growth records yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="card info-card">
+        <h3>Allergies</h3>
+        <div class="info-row"><span>Status</span><strong>{{ status_labels.get(child.allergy_status, "Not set") }}</strong></div>
+        {% for a in child.allergies %}
+            <div class="info-row">
+                <span>{{ a.allergen }} · {{ a.category }}{% if a.suspected %} · Suspected{% endif %}</span>
+                <span class="badge {{ sev_badges[a.severity] }}">{{ a.severity }}</span>
+            </div>
+        {% else %}
+            <p class="muted">No allergies recorded.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card info-card">
+        <h3>Latest Nutrition Plan</h3>
+        {% if plan_rec and plan_rec.plan and not plan_rec.plan.breastfeeding_only %}
+            <div class="info-row"><span>Review status</span><strong>{{ plan_rec.review_status }}{% if plan_rec.reviewer %} · {{ plan_rec.reviewer.name }}{% endif %}</strong></div>
+            {% for meal, foods in plan_rec.plan.meals.items() %}
+                <div class="info-row"><span>{{ meal }}</span><strong>{{ foods|join(" · ") }}</strong></div>
+            {% endfor %}
+            {% if plan_rec.doctor_note %}
+                <div class="info-row"><span>Doctor note</span><strong>{{ plan_rec.doctor_note }}</strong></div>
+            {% endif %}
+        {% elif plan_rec and plan_rec.plan %}
+            <p>Exclusive breastfeeding (under 6 months).</p>
+        {% else %}
+            <p class="muted">No nutrition plan generated yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="card info-card">
+        <h3>Reminders</h3>
+        {% for r in reminders %}
+            <div class="info-row">
+                <span>{{ r.title }} · {{ r.type }} · {{ r.scheduled_at.strftime("%b %d, %Y") }}</span>
+                <span class="badge {{ rem_badges[r.status] }}">{{ r.status }}</span>
+            </div>
+        {% else %}
+            <p class="muted">No reminders.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card info-card">
+        <h3>Consultations with you</h3>
+        {% for c in consults %}
+            <div class="info-row">
+                <span>{{ c.reason }} · {{ c.created_at.strftime("%b %d, %Y") }} · {{ c.status }}</span>
+                {% if c.status in ["Accepted", "Closed"] %}
+                    <a href="{{ url_for('main.consultation_messages', consult_id=c.id) }}">Open Chat</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
