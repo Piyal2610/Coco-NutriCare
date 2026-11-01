@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ current_lang() }}">
 <head>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark"; } catch (e) {}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Coco NutriCare{% endblock %}</title>
@@ -10,7 +11,7 @@
 <body>
     <div class="layout">
         <aside class="sidebar">
-            <div class="logo">Coco NutriCare</div>
+            <div class="logo"><a href="{{ url_for('main.index') }}" class="brand-link">Coco NutriCare</a></div>
             {% if current_user.is_authenticated %}
                 {% if current_user.role == "parent" %}
                     <a href="{{ url_for('parent.index') }}">{{ t("Dashboard") }}</a>
@@ -43,6 +44,7 @@
                 {% if current_user.is_authenticated %}
                     <div class="user">
                         {{ current_user.name }} |
+                        <button type="button" id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">☀️ Light</button> |
                         <a href="{{ url_for('main.set_language', code='bn' if current_lang() == 'en' else 'en') }}" class="lang-toggle">{{ "বাংলা" if current_lang() == "en" else "English" }}</a> |<a href="{{ url_for('auth.logout') }}">{{ t("Logout") }}</a>
                     </div>
                 {% endif %}
@@ -59,6 +61,7 @@
             </main>
         </div>
     </div>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
