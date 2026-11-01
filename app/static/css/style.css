@@ -158,3 +158,20 @@ html[lang="bn"] body { font-family: "Hind Siliguri", "Nirmala UI", sans-serif; }
 .search-form input, .search-form select { padding: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
 .search-form input { flex: 1; min-width: 200px; }
 
+.brand-link { color: inherit; text-decoration: none; }
+
+html[data-theme="light"] {
+    --bg: #f4f7f6;
+    --sidebar: #0e7a66;
+    --card: #ffffff;
+    --border: #d3e0dc;
+    --text: #17302b;
+    --muted: #556964;
+    --btn: #0e7a66;
+    --accent: #0b6b59;
+    --orange: #d27317;
+}
+html[data-theme="light"] .sidebar,
+html[data-theme="light"] .sidebar a { color: #ffffff; }
+.theme-toggle { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 999px; padding: 4px 12px; cursor: pointer; font: inherit; }
+

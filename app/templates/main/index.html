@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark"; } catch (e) {}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coco NutriCare</title>
@@ -15,8 +16,14 @@
                 <a href="#features">Features</a>
                 <a href="#features">How It Works</a>
                 <a href="#features">About</a>
+                <button type="button" id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
+                {% if current_user.is_authenticated %}
+                {% set homes = {"parent": "parent.index", "doctor": "doctor.index", "mother": "maternal.index", "admin": "admin.index"} %}
+                <a href="{{ url_for(homes[current_user.role]) }}" class="btn btn-orange">Go to Dashboard</a>
+                {% else %}
                 <a href="{{ url_for('auth.login') }}" class="btn">Login</a>
                 <a href="{{ url_for('auth.register') }}" class="btn btn-orange">Get Started</a>
+                {% endif %}
             </nav>
         </header>
 
@@ -48,5 +55,6 @@
             </div>
         </section>
     </div>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>
